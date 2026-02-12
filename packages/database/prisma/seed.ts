@@ -1,0 +1,571 @@
+import { PrismaClient, Role, Currency, ProductStatus, AssetType, PlaybookStatus, TemplateType } from "@prisma/client";
+import bcrypt from "bcryptjs";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log("🌱 Seeding database...");
+
+  // ── Countries ───────────────────────────────────────────
+  const colombia = await prisma.country.upsert({
+    where: { code: "CO" },
+    update: {},
+    create: { code: "CO", name: "Colombia", currency: "COP", taxRate: 0.19, active: true },
+  });
+
+  const ecuador = await prisma.country.upsert({
+    where: { code: "EC" },
+    update: {},
+    create: { code: "EC", name: "Ecuador", currency: "USD", taxRate: 0.12, active: true },
+  });
+
+  console.log("✅ Countries created");
+
+  // ── Categories ──────────────────────────────────────────
+  const categories = await Promise.all([
+    prisma.category.upsert({
+      where: { slug: "suplementos-nutricionales" },
+      update: {},
+      create: { name: "Suplementos Nutricionales", slug: "suplementos-nutricionales", description: "Vitaminas, minerales y suplementos alimenticios", sortOrder: 1 },
+    }),
+    prisma.category.upsert({
+      where: { slug: "cuidado-personal" },
+      update: {},
+      create: { name: "Cuidado Personal", slug: "cuidado-personal", description: "Productos de higiene y cuidado corporal", sortOrder: 2 },
+    }),
+    prisma.category.upsert({
+      where: { slug: "equipos-medicos" },
+      update: {},
+      create: { name: "Equipos Médicos", slug: "equipos-medicos", description: "Dispositivos y equipos para uso médico", sortOrder: 3 },
+    }),
+    prisma.category.upsert({
+      where: { slug: "bienestar-natural" },
+      update: {},
+      create: { name: "Bienestar Natural", slug: "bienestar-natural", description: "Productos naturales y orgánicos para la salud", sortOrder: 4 },
+    }),
+    prisma.category.upsert({
+      where: { slug: "fitness-deporte" },
+      update: {},
+      create: { name: "Fitness y Deporte", slug: "fitness-deporte", description: "Productos para rendimiento deportivo y fitness", sortOrder: 5 },
+    }),
+  ]);
+
+  console.log("✅ Categories created");
+
+  // ── Users ───────────────────────────────────────────────
+  const passwordHash = await bcrypt.hash("Admin123!", 12);
+
+  const users = await Promise.all([
+    prisma.user.upsert({
+      where: { email: "admin@saludprolab.com" },
+      update: {},
+      create: {
+        email: "admin@saludprolab.com",
+        name: "Carlos Admin",
+        passwordHash,
+        role: "SUPER_ADMIN",
+        active: true,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "manager@saludprolab.com" },
+      update: {},
+      create: {
+        email: "manager@saludprolab.com",
+        name: "María Gestora",
+        passwordHash: await bcrypt.hash("Manager123!", 12),
+        role: "ADMIN",
+        active: true,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "analista@saludprolab.com" },
+      update: {},
+      create: {
+        email: "analista@saludprolab.com",
+        name: "Pedro Analista",
+        passwordHash: await bcrypt.hash("Analyst123!", 12),
+        role: "ANALYST",
+        active: true,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "tienda@ejemplo.com" },
+      update: {},
+      create: {
+        email: "tienda@ejemplo.com",
+        name: "Laura Dropshipper",
+        passwordHash: await bcrypt.hash("Drop123!", 12),
+        role: "DROPSHIPPER",
+        active: true,
+      },
+    }),
+  ]);
+
+  console.log("✅ Users created");
+
+  // ── Supplier ────────────────────────────────────────────
+  const supplier = await prisma.supplier.upsert({
+    where: { slug: "laboratorios-vitasalud" },
+    update: {},
+    create: {
+      name: "Laboratorios VitaSalud",
+      slug: "laboratorios-vitasalud",
+      contactName: "Roberto Méndez",
+      email: "contacto@vitasalud.com",
+      phone: "+57 1 234 5678",
+      website: "https://vitasalud.com",
+      country: "CO",
+      notes: "Proveedor principal de suplementos. Certificación GMP.",
+      active: true,
+    },
+  });
+
+  console.log("✅ Supplier created");
+
+  // ── Products ────────────────────────────────────────────
+  const productsData = [
+    {
+      name: "Colágeno Hidrolizado Premium",
+      slug: "colageno-hidrolizado-premium",
+      description: "Colágeno hidrolizado tipo I y III de origen bovino. Contribuye a la salud de piel, cabello, uñas y articulaciones. Fórmula enriquecida con vitamina C para mejor absorción.",
+      shortDesc: "Colágeno tipo I y III con vitamina C para piel y articulaciones",
+      sku: "SP-COL-001",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[0].id,
+      basePrice: 12.50,
+      baseCurrency: "USD" as Currency,
+      weight: 0.35,
+      tags: ["colágeno", "piel", "articulaciones", "vitamina-c"],
+      metaTitle: "Colágeno Hidrolizado Premium - Salud ProLab",
+      faqs: JSON.stringify([
+        { q: "¿Cuánto tiempo tarda en verse resultados?", a: "Generalmente entre 4-8 semanas de uso continuo." },
+        { q: "¿Tiene sabor?", a: "Disponible en sabor neutro y frutos rojos." },
+      ]),
+    },
+    {
+      name: "Omega 3 Ultra Concentrado",
+      slug: "omega-3-ultra-concentrado",
+      description: "Aceite de pescado ultra concentrado con EPA y DHA. Apoya la salud cardiovascular, cerebral y articular. Cápsulas blandas de fácil digestión.",
+      shortDesc: "EPA + DHA concentrado para salud cardiovascular y cerebral",
+      sku: "SP-OMG-002",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[0].id,
+      basePrice: 18.00,
+      baseCurrency: "USD" as Currency,
+      weight: 0.25,
+      tags: ["omega-3", "cardiovascular", "cerebral", "EPA", "DHA"],
+      metaTitle: "Omega 3 Ultra Concentrado - Salud ProLab",
+    },
+    {
+      name: "Proteína Whey Isolate",
+      slug: "proteina-whey-isolate",
+      description: "Proteína de suero de leche aislada con 90% de pureza. 25g de proteína por porción. Ideal para recuperación muscular post-entrenamiento.",
+      shortDesc: "Whey Isolate 90% pureza, 25g proteína por porción",
+      sku: "SP-PRO-003",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[4].id,
+      basePrice: 35.00,
+      baseCurrency: "USD" as Currency,
+      weight: 1.0,
+      tags: ["proteína", "whey", "fitness", "músculo"],
+      metaTitle: "Proteína Whey Isolate - Salud ProLab",
+    },
+    {
+      name: "Kit Tensiómetro Digital",
+      slug: "kit-tensiometro-digital",
+      description: "Tensiómetro digital de brazo con pantalla LCD grande. Memoria para 120 lecturas. Incluye brazalete ajustable y estuche de transporte.",
+      shortDesc: "Tensiómetro digital LCD con memoria 120 lecturas",
+      sku: "SP-TEN-004",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[2].id,
+      basePrice: 28.00,
+      baseCurrency: "USD" as Currency,
+      weight: 0.4,
+      tags: ["tensiómetro", "presión", "digital", "equipo-médico"],
+      metaTitle: "Kit Tensiómetro Digital - Salud ProLab",
+    },
+    {
+      name: "Crema Facial Ácido Hialurónico",
+      slug: "crema-facial-acido-hialuronico",
+      description: "Crema hidratante facial con ácido hialurónico de triple peso molecular. Hidratación profunda, reduce líneas de expresión. Sin parabenos.",
+      shortDesc: "Hidratante facial con ácido hialurónico triple acción",
+      sku: "SP-CRE-005",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[1].id,
+      basePrice: 15.00,
+      baseCurrency: "USD" as Currency,
+      weight: 0.08,
+      tags: ["facial", "ácido-hialurónico", "hidratante", "anti-edad"],
+      metaTitle: "Crema Facial Ácido Hialurónico - Salud ProLab",
+    },
+    {
+      name: "Aceite Esencial de Lavanda Orgánico",
+      slug: "aceite-esencial-lavanda-organico",
+      description: "Aceite esencial 100% puro de lavanda orgánica. Para aromaterapia, masajes y cuidado de la piel. Certificación orgánica USDA.",
+      shortDesc: "Aceite esencial de lavanda 100% orgánico certificado",
+      sku: "SP-ACE-006",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[3].id,
+      basePrice: 9.50,
+      baseCurrency: "USD" as Currency,
+      weight: 0.05,
+      tags: ["aceite-esencial", "lavanda", "orgánico", "aromaterapia"],
+      metaTitle: "Aceite Esencial Lavanda Orgánico - Salud ProLab",
+    },
+    {
+      name: "Magnesio + Zinc + B6",
+      slug: "magnesio-zinc-b6",
+      description: "Fórmula sinérgica de magnesio bisglicinato, zinc picolinato y vitamina B6. Apoya el sueño, la recuperación muscular y el sistema inmune.",
+      shortDesc: "Magnesio + Zinc + B6 para sueño y recuperación",
+      sku: "SP-MAG-007",
+      status: "DRAFT" as ProductStatus,
+      categoryId: categories[0].id,
+      basePrice: 14.00,
+      baseCurrency: "USD" as Currency,
+      weight: 0.2,
+      tags: ["magnesio", "zinc", "vitamina-b6", "sueño", "inmune"],
+      metaTitle: "Magnesio + Zinc + B6 - Salud ProLab",
+    },
+    {
+      name: "Banda de Resistencia Set Pro",
+      slug: "banda-resistencia-set-pro",
+      description: "Set de 5 bandas de resistencia de látex natural con diferentes niveles. Incluye anclaje de puerta, manijas acolchadas y tobilleras. Bolsa de transporte.",
+      shortDesc: "Set 5 bandas de resistencia con accesorios completos",
+      sku: "SP-BAN-008",
+      status: "ACTIVE" as ProductStatus,
+      categoryId: categories[4].id,
+      basePrice: 22.00,
+      baseCurrency: "USD" as Currency,
+      weight: 0.6,
+      tags: ["bandas", "resistencia", "fitness", "entrenamiento"],
+      metaTitle: "Banda de Resistencia Set Pro - Salud ProLab",
+    },
+  ];
+
+  const products = [];
+  for (const data of productsData) {
+    const product = await prisma.product.upsert({
+      where: { sku: data.sku },
+      update: {},
+      create: { ...data, supplierId: supplier.id },
+    });
+    products.push(product);
+  }
+
+  console.log("✅ Products created");
+
+  // ── Variants ────────────────────────────────────────────
+  await prisma.productVariant.createMany({
+    skipDuplicates: true,
+    data: [
+      { productId: products[0].id, name: "Sabor Neutro 300g", sku: "SP-COL-001-NEU", price: 12.50, stock: 150, attributes: JSON.stringify({ sabor: "neutro", peso: "300g" }) },
+      { productId: products[0].id, name: "Frutos Rojos 300g", sku: "SP-COL-001-FR", price: 13.00, stock: 100, attributes: JSON.stringify({ sabor: "frutos rojos", peso: "300g" }) },
+      { productId: products[0].id, name: "Sabor Neutro 500g", sku: "SP-COL-001-NEU5", price: 19.50, stock: 80, attributes: JSON.stringify({ sabor: "neutro", peso: "500g" }) },
+      { productId: products[2].id, name: "Chocolate 1kg", sku: "SP-PRO-003-CHO", price: 35.00, stock: 60, attributes: JSON.stringify({ sabor: "chocolate", peso: "1kg" }) },
+      { productId: products[2].id, name: "Vainilla 1kg", sku: "SP-PRO-003-VAN", price: 35.00, stock: 45, attributes: JSON.stringify({ sabor: "vainilla", peso: "1kg" }) },
+      { productId: products[2].id, name: "Sin Sabor 2kg", sku: "SP-PRO-003-SS2", price: 62.00, stock: 30, attributes: JSON.stringify({ sabor: "sin sabor", peso: "2kg" }) },
+      { productId: products[7].id, name: "Nivel Básico (3 bandas)", sku: "SP-BAN-008-BAS", price: 15.00, stock: 200, attributes: JSON.stringify({ nivel: "básico", cantidad: "3" }) },
+      { productId: products[7].id, name: "Nivel Pro (5 bandas)", sku: "SP-BAN-008-PRO", price: 22.00, stock: 120, attributes: JSON.stringify({ nivel: "pro", cantidad: "5" }) },
+    ],
+  });
+
+  console.log("✅ Variants created");
+
+  // ── Country Availability ────────────────────────────────
+  for (const product of products) {
+    await prisma.productCountryAvailability.upsert({
+      where: { productId_countryId: { productId: product.id, countryId: colombia.id } },
+      update: {},
+      create: {
+        productId: product.id,
+        countryId: colombia.id,
+        available: true,
+        localPrice: product.basePrice * 4200,
+        localCurrency: "COP",
+      },
+    });
+
+    if (product.status === "ACTIVE") {
+      await prisma.productCountryAvailability.upsert({
+        where: { productId_countryId: { productId: product.id, countryId: ecuador.id } },
+        update: {},
+        create: {
+          productId: product.id,
+          countryId: ecuador.id,
+          available: true,
+          localPrice: product.basePrice,
+          localCurrency: "USD",
+        },
+      });
+    }
+  }
+
+  console.log("✅ Country availability created");
+
+  // ── Assets (dummy) ──────────────────────────────────────
+  for (const product of products) {
+    await prisma.asset.create({
+      data: {
+        productId: product.id,
+        type: "IMAGE",
+        url: `/placeholder/${product.slug}.jpg`,
+        key: `products/${product.slug}/main.jpg`,
+        filename: `${product.slug}-main.jpg`,
+        mimeType: "image/jpeg",
+        size: 150000,
+        alt: product.name,
+        sortOrder: 0,
+      },
+    });
+  }
+
+  console.log("✅ Assets created");
+
+  // ── Research Notes ──────────────────────────────────────
+  const note1 = await prisma.researchNote.create({
+    data: {
+      productId: products[0].id,
+      title: "Análisis de Mercado: Colágeno Hidrolizado en Colombia",
+      content: `## Resumen del Mercado\n\nEl mercado de colágeno hidrolizado en Colombia ha crecido un 25% en los últimos 2 años. Los principales canales de venta son:\n\n1. **Tiendas naturistas** - 40% del mercado\n2. **E-commerce** - 35% y creciendo\n3. **Farmacias** - 25%\n\n## Perfil del Consumidor\n- Mujeres 25-45 años (70%)\n- NSE medio-alto\n- Interesadas en anti-aging y bienestar articular\n\n## Oportunidades\n- Diferenciación por certificaciones (GMP, orgánico)\n- Sabores innovadores (matcha, açaí)\n- Presentaciones individuales (sachets)`,
+      source: "Euromonitor + investigación propia",
+      tags: ["colágeno", "colombia", "mercado", "tendencias"],
+    },
+  });
+
+  await prisma.competitorBenchmark.createMany({
+    data: [
+      {
+        researchNoteId: note1.id,
+        competitor: "NaturVida Colágeno",
+        url: "https://naturvida.com.co/colageno",
+        price: 52500,
+        currency: "COP",
+        rating: 4.2,
+        reviewCount: 1250,
+        pros: ["Buena distribución", "Marca conocida", "Precio accesible"],
+        cons: ["Sin vitamina C", "Solo un sabor", "Envase básico"],
+        notes: "Líder actual del mercado. Oportunidad de superarlos en formulación.",
+      },
+      {
+        researchNoteId: note1.id,
+        competitor: "VitalCol Premium",
+        url: "https://vitalcol.co",
+        price: 89000,
+        currency: "COP",
+        rating: 4.6,
+        reviewCount: 430,
+        pros: ["Fórmula completa", "Buen packaging", "Múltiples sabores"],
+        cons: ["Precio alto", "Poca distribución", "Stock irregular"],
+        notes: "Competidor premium. Nuestro target de posicionamiento.",
+      },
+    ],
+  });
+
+  const note2 = await prisma.researchNote.create({
+    data: {
+      productId: products[1].id,
+      title: "Tendencias Omega 3 - Mercado Ecuador 2024",
+      content: `## Estado del Mercado\n\nEcuador muestra una adopción creciente de Omega 3, especialmente en:\n- Quito y Guayaquil (mercados principales)\n- Segmento 30-55 años\n\n## Regulación\n- Registro sanitario ARCSA requerido\n- Importación: partida arancelaria específica para suplementos\n\n## Precios de Referencia\n- Rango retail: $15-35 USD\n- Margen distribuidor: 30-40%`,
+      source: "ARCSA + análisis de mercado local",
+      tags: ["omega-3", "ecuador", "regulación", "precios"],
+    },
+  });
+
+  await prisma.competitorBenchmark.create({
+    data: {
+      researchNoteId: note2.id,
+      competitor: "OmegaLab EC",
+      url: "https://omegalab.ec",
+      price: 24.50,
+      currency: "USD",
+      rating: 4.0,
+      reviewCount: 180,
+      pros: ["Registro ARCSA", "Distribución en farmacias"],
+      cons: ["Concentración baja de EPA/DHA", "Sin certificación internacional"],
+    },
+  });
+
+  const note3 = await prisma.researchNote.create({
+    data: {
+      title: "Investigación General: Tendencias E-commerce Salud LATAM",
+      content: `## Macro Tendencias\n\n1. **Social Commerce**: 60% de compradores descubren productos en redes sociales\n2. **WhatsApp Commerce**: Canal de venta creciente en Colombia y Ecuador\n3. **Suscripciones**: Modelo de recurrencia en suplementos\n4. **Live Shopping**: En crecimiento para productos de salud\n\n## Plataformas Principales\n- Mercado Libre (ambos países)\n- Rappi (Colombia principalmente)\n- Shopify stores (creciente)\n\n## Recomendaciones\n- Implementar chatbot de WhatsApp\n- Crear contenido educativo\n- Programa de referidos`,
+      source: "Statista + Americas Market Intelligence",
+      tags: ["e-commerce", "latam", "tendencias", "social-commerce"],
+    },
+  });
+
+  console.log("✅ Research notes created");
+
+  // ── Playbooks ───────────────────────────────────────────
+  const playbook1 = await prisma.playbook.create({
+    data: {
+      title: "Lanzamiento Colágeno Premium Colombia",
+      slug: "lanzamiento-colageno-premium-co",
+      description: "Playbook completo para el lanzamiento del Colágeno Hidrolizado Premium en el mercado colombiano",
+      status: "PUBLISHED",
+      tags: ["lanzamiento", "colágeno", "colombia"],
+      sections: {
+        create: [
+          {
+            phase: "ESTRATEGIA",
+            title: "Estrategia de Lanzamiento",
+            content: "## Objetivo\nPosicionar el Colágeno Hidrolizado Premium como la opción premium-accesible en Colombia.\n\n## Meta\n- 500 unidades vendidas en primer mes\n- 100 reseñas positivas en 60 días\n- Presencia en 3 marketplaces\n\n## Diferenciador\nÚnico colágeno con vitamina C + doble sabor a precio competitivo.",
+            sortOrder: 0,
+          },
+          {
+            phase: "SEGMENTOS",
+            title: "Segmentación de Mercado",
+            content: "## Segmento Primario\n**Mujer urbana 28-42 años**\n- NSE medio-alto\n- Interesada en bienestar y anti-aging\n- Activa en Instagram y TikTok\n- Compra online con frecuencia\n\n## Segmento Secundario\n**Deportistas 25-50 años**\n- Buscan recuperación articular\n- Comparan ingredientes\n- Valoran certificaciones",
+            sortOrder: 1,
+          },
+          {
+            phase: "FUNNEL",
+            title: "Embudo de Conversión",
+            content: "## Awareness\n- Influencer marketing (micro-influencers salud)\n- Content marketing en Instagram/TikTok\n- Google Ads (keywords: colágeno hidrolizado)\n\n## Consideración\n- Landing page educativa\n- Comparativa vs competencia\n- Testimonios reales\n\n## Conversión\n- Oferta de lanzamiento 15% OFF\n- Bundle colágeno + shaker\n- Garantía de satisfacción 30 días",
+            sortOrder: 2,
+          },
+          {
+            phase: "EJECUCION",
+            title: "Plan de Ejecución",
+            content: "## Semana 1-2: Pre-lanzamiento\n- Teaser en redes sociales\n- Lista de espera con descuento\n- Envío a influencers\n\n## Semana 3-4: Lanzamiento\n- Activación de campañas pagadas\n- Live shopping en Instagram\n- Email marketing a base existente\n\n## Semana 5-8: Optimización\n- Retargeting a visitantes\n- UGC (User Generated Content)\n- Reviews en marketplaces",
+            sortOrder: 3,
+          },
+          {
+            phase: "RECURSOS",
+            title: "Recursos Necesarios",
+            content: "## Presupuesto\n- Influencers: $500 USD\n- Ads (Meta + Google): $1,000 USD/mes\n- Contenido: $300 USD\n- Muestras: $200 USD\n\n## Equipo\n- Community Manager (medio tiempo)\n- Diseñador gráfico (freelance)\n- Copywriter\n\n## Herramientas\n- Canva Pro\n- Meta Business Suite\n- Google Analytics 4",
+            sortOrder: 4,
+          },
+          {
+            phase: "ANALISIS",
+            title: "Métricas y Análisis",
+            content: "## KPIs Principales\n- **ROAS**: Meta >3x\n- **CPA**: <$8 USD\n- **Tasa de conversión**: >2.5%\n- **LTV/CAC ratio**: >3\n\n## Seguimiento\n- Dashboard semanal\n- Reunión quincenal de resultados\n- Ajuste de presupuesto mensual\n\n## Herramientas de Medición\n- Google Analytics 4\n- Meta Ads Manager\n- Hotjar (heatmaps landing)",
+            sortOrder: 5,
+          },
+        ],
+      },
+    },
+  });
+
+  const playbook2 = await prisma.playbook.create({
+    data: {
+      title: "Estrategia WhatsApp Commerce",
+      slug: "estrategia-whatsapp-commerce",
+      description: "Playbook para implementar ventas por WhatsApp Business",
+      status: "DRAFT",
+      tags: ["whatsapp", "ventas", "automatización"],
+      sections: {
+        create: [
+          {
+            phase: "ESTRATEGIA",
+            title: "Estrategia WhatsApp",
+            content: "## Objetivo\nImplementar canal de ventas vía WhatsApp Business API.\n\n## Alcance\n- Catálogo de productos en WhatsApp\n- Atención al cliente automatizada\n- Seguimiento post-venta",
+            sortOrder: 0,
+          },
+          {
+            phase: "SEGMENTOS",
+            title: "Audiencia WhatsApp",
+            content: "## Target\n- Clientes existentes para recompra\n- Leads de redes sociales\n- Referidos de clientes actuales",
+            sortOrder: 1,
+          },
+        ],
+      },
+    },
+  });
+
+  console.log("✅ Playbooks created");
+
+  // ── Templates ───────────────────────────────────────────
+  await prisma.template.createMany({
+    skipDuplicates: true,
+    data: [
+      {
+        name: "Email de Bienvenida",
+        slug: "email-bienvenida",
+        type: "EMAIL",
+        subject: "¡Bienvenido a {{brand}}! Tu acceso está listo",
+        body: "Hola {{nombre}},\n\n¡Bienvenido a {{brand}}! Tu cuenta de {{rol}} ha sido creada exitosamente.\n\nAccede a la plataforma aquí: {{url}}\n\nTu usuario: {{email}}\n\nSi tienes alguna pregunta, no dudes en contactarnos.\n\n¡Éxitos en tus ventas!\nEl equipo de {{brand}}",
+        variables: ["nombre", "brand", "rol", "url", "email"],
+        tags: ["onboarding", "bienvenida"],
+      },
+      {
+        name: "Post Lanzamiento de Producto",
+        slug: "post-lanzamiento-producto",
+        type: "SOCIAL",
+        subject: "",
+        body: "🚀 ¡NUEVO PRODUCTO!\n\n{{nombre_producto}}\n\n{{descripcion_corta}}\n\n✅ {{beneficio_1}}\n✅ {{beneficio_2}}\n✅ {{beneficio_3}}\n\n💰 Precio especial de lanzamiento: {{precio}}\n🔗 Link en bio\n\n#SaludProLab #{{hashtag_1}} #{{hashtag_2}}",
+        variables: ["nombre_producto", "descripcion_corta", "beneficio_1", "beneficio_2", "beneficio_3", "precio", "hashtag_1", "hashtag_2"],
+        tags: ["lanzamiento", "social-media", "producto"],
+      },
+      {
+        name: "Mensaje WhatsApp Seguimiento",
+        slug: "whatsapp-seguimiento",
+        type: "WHATSAPP",
+        subject: "",
+        body: "Hola {{nombre}} 👋\n\nSoy {{agente}} de {{brand}}.\n\n¿Qué tal te ha ido con tu {{producto}}? Queremos asegurarnos de que estés satisfecho/a.\n\nSi necesitas algo, ¡estamos aquí para ayudarte! 💚\n\n¿Te gustaría conocer nuestras novedades?",
+        variables: ["nombre", "agente", "brand", "producto"],
+        tags: ["whatsapp", "seguimiento", "post-venta"],
+      },
+      {
+        name: "Landing Page Producto",
+        slug: "landing-page-producto",
+        type: "LANDING",
+        subject: "{{titulo_pagina}}",
+        body: "# {{nombre_producto}}\n\n## {{subtitulo}}\n\n{{descripcion}}\n\n### Beneficios\n- {{beneficio_1}}\n- {{beneficio_2}}\n- {{beneficio_3}}\n\n### Lo que dicen nuestros clientes\n\"{{testimonio}}\" - {{nombre_cliente}}\n\n### Precio\n{{precio}} | {{descuento}} de descuento\n\n[COMPRAR AHORA]({{url_compra}})",
+        variables: ["nombre_producto", "subtitulo", "descripcion", "beneficio_1", "beneficio_2", "beneficio_3", "testimonio", "nombre_cliente", "precio", "descuento", "url_compra", "titulo_pagina"],
+        tags: ["landing", "ventas", "producto"],
+      },
+    ],
+  });
+
+  console.log("✅ Templates created");
+
+  // ── Collections ─────────────────────────────────────────
+  const collection = await prisma.collection.create({
+    data: {
+      userId: users[3].id,
+      name: "Mis Favoritos para Tienda",
+      description: "Productos seleccionados para mi tienda online",
+      isPublic: false,
+      items: {
+        create: [
+          { productId: products[0].id, notes: "Bestseller potencial", sortOrder: 0 },
+          { productId: products[4].id, notes: "Buen margen", sortOrder: 1 },
+          { productId: products[7].id, notes: "Trending en fitness", sortOrder: 2 },
+        ],
+      },
+    },
+  });
+
+  console.log("✅ Collections created");
+
+  // ── Audit Logs ──────────────────────────────────────────
+  await prisma.auditLog.createMany({
+    data: [
+      { userId: users[0].id, action: "CREATE", entity: "Product", entityId: products[0].id, details: JSON.stringify({ name: products[0].name }) },
+      { userId: users[0].id, action: "CREATE", entity: "Product", entityId: products[1].id, details: JSON.stringify({ name: products[1].name }) },
+      { userId: users[1].id, action: "UPDATE", entity: "Product", entityId: products[0].id, details: JSON.stringify({ field: "status", from: "DRAFT", to: "ACTIVE" }) },
+      { userId: users[2].id, action: "CREATE", entity: "ResearchNote", entityId: note1.id, details: JSON.stringify({ title: note1.title }) },
+      { userId: users[0].id, action: "CREATE", entity: "Playbook", entityId: playbook1.id, details: JSON.stringify({ title: playbook1.title }) },
+    ],
+  });
+
+  console.log("✅ Audit logs created");
+  console.log("\n🎉 Seed completed successfully!");
+  console.log("\n📋 Login credentials:");
+  console.log("  SUPER_ADMIN: admin@saludprolab.com / Admin123!");
+  console.log("  ADMIN:       manager@saludprolab.com / Manager123!");
+  console.log("  ANALYST:     analista@saludprolab.com / Analyst123!");
+  console.log("  DROPSHIPPER: tienda@ejemplo.com / Drop123!");
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

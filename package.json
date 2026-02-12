@@ -1,0 +1,36 @@
+{
+  "name": "salud-prolab",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "type-check": "turbo type-check",
+    "db:generate": "pnpm --filter @salud-prolab/database generate",
+    "db:migrate": "pnpm --filter @salud-prolab/database migrate",
+    "db:push": "pnpm --filter @salud-prolab/database push",
+    "db:seed": "pnpm --filter @salud-prolab/database seed",
+    "db:studio": "pnpm --filter @salud-prolab/database studio",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  },
+  "packageManager": "pnpm@10.29.3",
+  "engines": {
+    "node": ">=20"
+  }
+}
