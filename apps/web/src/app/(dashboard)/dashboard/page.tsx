@@ -6,6 +6,7 @@ import { useResearchNotes } from "@/hooks/use-research";
 import { usePlaybooks } from "@/hooks/use-marketing";
 import { useCollections } from "@/hooks/use-collections";
 import { useAdminUsers, useAuditLogs } from "@/hooks/use-admin";
+import { useOrders, useScheduledOrders } from "@/hooks/use-orders";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -32,6 +33,9 @@ import {
   FileText,
   BookOpen,
   Star,
+  ShoppingCart,
+  CalendarClock,
+  TrendingUp,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -102,9 +106,7 @@ function AdminDashboard() {
       {/* Recent Audit Logs */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">
-            Actividad reciente
-          </h2>
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">Actividad reciente</h2>
           <Button variant="link" asChild>
             <Link href="/admin/audit">
               Ver todo <ArrowRight className="h-4 w-4 ml-1" />
@@ -126,20 +128,25 @@ function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(audit.data?.data ?? audit.data ?? [])
+                {(Array.isArray(audit.data?.data) ? audit.data.data : [])
                   .slice(0, 5)
-                  .map((log: Record<string, string>) => (
-                    <TableRow key={log.id}>
+                  .map((log: Record<string, unknown>) => (
+                    <TableRow key={log.id as string}>
                       <TableCell className="text-sm">
                         {log.createdAt
-                          ? new Date(log.createdAt).toLocaleString("es")
+                          ? new Date(log.createdAt as string).toLocaleString("es")
                           : "-"}
                       </TableCell>
-                      <TableCell>{log.userName ?? log.userId ?? "-"}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{log.action}</Badge>
+                        {(log.user as Record<string, string>)?.name ??
+                          (log.userName as string) ??
+                          (log.userId as string) ??
+                          "-"}
                       </TableCell>
-                      <TableCell>{log.entity ?? "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{String(log.action)}</Badge>
+                      </TableCell>
+                      <TableCell>{String(log.entity ?? "-")}</TableCell>
                     </TableRow>
                   ))}
               </TableBody>
@@ -150,9 +157,7 @@ function AdminDashboard() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-3">
-          Acciones rapidas
-        </h2>
+        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-3">Acciones rapidas</h2>
         <div className="flex flex-wrap gap-3">
           <Button asChild>
             <Link href="/catalogo">
@@ -227,14 +232,14 @@ function AnalystDashboard() {
         </div>
         {products.isLoading ? (
           <CardsSkeleton count={3} />
-        ) : (products.data?.data ?? products.data ?? []).length === 0 ? (
+        ) : (Array.isArray(products.data?.data) ? products.data.data : []).length === 0 ? (
           <EmptyState
             title="Todos los productos tienen investigacion"
             description="No hay productos pendientes de analisis"
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(products.data?.data ?? products.data ?? [])
+            {(Array.isArray(products.data?.data) ? products.data.data : [])
               .slice(0, 6)
               .map((p: Record<string, unknown>) => (
                 <ProductCard key={p.id as string} product={p as never} />
@@ -251,15 +256,54 @@ function DropshipperDashboard() {
   const products = useProducts({ status: "ACTIVE" });
   const collections = useCollections();
   const playbooks = usePlaybooks();
+  const orders = useOrders({ status: "PENDING,CONFIRMED,PROCESSING,SHIPPED" });
+  const scheduled = useScheduledOrders();
+
+  const activeOrders: Record<string, unknown>[] = Array.isArray(orders.data?.data)
+    ? orders.data.data
+    : [];
+  const scheduledOrders: Record<string, unknown>[] = Array.isArray(scheduled.data?.data)
+    ? scheduled.data.data
+    : [];
+
+  // Calculate average margin from order data when available
+  const avgMargin =
+    activeOrders.length > 0
+      ? activeOrders.reduce(
+          (acc: number, o: Record<string, unknown>) => acc + ((o.margin as number) ?? 0),
+          0
+        ) / activeOrders.length
+      : 0;
 
   return (
     <div className="space-y-6">
+      {/* Stat Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          label="Pedidos activos"
+          value={activeOrders.length}
+          icon={ShoppingCart}
+          borderColor="border-l-blue-500"
+        />
+        <StatCard
+          label="Programaciones"
+          value={scheduledOrders.length}
+          icon={CalendarClock}
+          borderColor="border-l-purple-500"
+        />
+        <StatCard
+          label="Margen promedio"
+          value={avgMargin > 0 ? `${avgMargin.toFixed(1)}%` : "--"}
+          icon={TrendingUp}
+          borderColor="border-l-green-500"
+          trend="Sobre pedidos activos"
+        />
+      </div>
+
       {/* Featured Products */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">
-            Productos destacados
-          </h2>
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">Productos destacados</h2>
           <Button variant="link" asChild>
             <Link href="/catalogo">
               Ver catalogo <ArrowRight className="h-4 w-4 ml-1" />
@@ -270,7 +314,7 @@ function DropshipperDashboard() {
           <CardsSkeleton count={4} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {(products.data?.data ?? products.data ?? [])
+            {(Array.isArray(products.data?.data) ? products.data.data : [])
               .slice(0, 4)
               .map((p: Record<string, unknown>) => (
                 <ProductCard key={p.id as string} product={p as never} />
@@ -282,9 +326,7 @@ function DropshipperDashboard() {
       {/* My Collections */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">
-            Mis colecciones
-          </h2>
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">Mis colecciones</h2>
           <Button variant="link" asChild>
             <Link href="/perfil">
               Ver todas <ArrowRight className="h-4 w-4 ml-1" />
@@ -293,7 +335,7 @@ function DropshipperDashboard() {
         </div>
         {collections.isLoading ? (
           <CardsSkeleton count={3} />
-        ) : (collections.data ?? []).length === 0 ? (
+        ) : (collections.data?.data ?? []).length === 0 ? (
           <EmptyState
             icon={Star}
             title="Sin colecciones"
@@ -309,21 +351,17 @@ function DropshipperDashboard() {
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(collections.data ?? [])
-              .slice(0, 3)
-              .map((col: Record<string, unknown>) => (
-                <div
-                  key={col.id as string}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4"
-                >
-                  <h3 className="font-semibold text-[var(--foreground)]">
-                    {col.name as string}
-                  </h3>
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    {(col.itemCount as number) ?? 0} productos
-                  </p>
-                </div>
-              ))}
+            {(collections.data?.data ?? []).slice(0, 3).map((col: Record<string, unknown>) => (
+              <div
+                key={col.id as string}
+                className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4"
+              >
+                <h3 className="font-semibold text-[var(--foreground)]">{col.name as string}</h3>
+                <p className="text-sm text-[var(--muted-foreground)]">
+                  {(col.itemCount as number) ?? 0} productos
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -331,9 +369,7 @@ function DropshipperDashboard() {
       {/* New Playbooks */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">
-            Nuevos playbooks
-          </h2>
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">Nuevos playbooks</h2>
           <Button variant="link" asChild>
             <Link href="/marketing">
               Ver todos <ArrowRight className="h-4 w-4 ml-1" />
@@ -344,7 +380,7 @@ function DropshipperDashboard() {
           <CardsSkeleton count={3} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(playbooks.data?.data ?? playbooks.data ?? [])
+            {(Array.isArray(playbooks.data?.data) ? playbooks.data.data : [])
               .slice(0, 3)
               .map((pb: Record<string, unknown>) => (
                 <Link
@@ -354,9 +390,7 @@ function DropshipperDashboard() {
                 >
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-[var(--primary)]" />
-                    <h3 className="font-semibold text-[var(--foreground)]">
-                      {pb.title as string}
-                    </h3>
+                    <h3 className="font-semibold text-[var(--foreground)]">{pb.title as string}</h3>
                   </div>
                   <p className="text-sm text-[var(--muted-foreground)] mt-1">
                     {(pb.sectionCount as number) ?? 0} secciones
@@ -393,7 +427,7 @@ function GuestDashboard() {
           <CardsSkeleton count={4} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {(products.data?.data ?? products.data ?? [])
+            {(Array.isArray(products.data?.data) ? products.data.data : [])
               .slice(0, 4)
               .map((p: Record<string, unknown>) => (
                 <ProductCard key={p.id as string} product={p as never} />

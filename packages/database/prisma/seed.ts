@@ -1,10 +1,49 @@
-import { PrismaClient, Role, Currency, ProductStatus, AssetType, PlaybookStatus, TemplateType } from "@prisma/client";
+import {
+  PrismaClient,
+  Role,
+  Currency,
+  ProductStatus,
+  AssetType,
+  PlaybookStatus,
+  TemplateType,
+  BusinessModel,
+  OrderType,
+  OrderStatus,
+  Platform,
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Seeding database...");
+
+  // ── Cleanup (for re-seeding) ──────────────────────────────
+  await prisma.platformProductReference.deleteMany();
+  await prisma.scheduledOrder.deleteMany();
+  await prisma.orderStatusHistory.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.distributor.deleteMany();
+  await prisma.priceTier.deleteMany();
+  await prisma.collectionItem.deleteMany();
+  await prisma.collection.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.template.deleteMany();
+  await prisma.playbookSection.deleteMany();
+  await prisma.playbook.deleteMany();
+  await prisma.competitorBenchmark.deleteMany();
+  await prisma.researchNote.deleteMany();
+  await prisma.asset.deleteMany();
+  await prisma.productCountryAvailability.deleteMany();
+  await prisma.productVariant.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.supplier.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.country.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("🧹 Existing data cleaned");
 
   // ── Countries ───────────────────────────────────────────
   const colombia = await prisma.country.upsert({
@@ -26,27 +65,52 @@ async function main() {
     prisma.category.upsert({
       where: { slug: "suplementos-nutricionales" },
       update: {},
-      create: { name: "Suplementos Nutricionales", slug: "suplementos-nutricionales", description: "Vitaminas, minerales y suplementos alimenticios", sortOrder: 1 },
+      create: {
+        name: "Suplementos Nutricionales",
+        slug: "suplementos-nutricionales",
+        description: "Vitaminas, minerales y suplementos alimenticios",
+        sortOrder: 1,
+      },
     }),
     prisma.category.upsert({
       where: { slug: "cuidado-personal" },
       update: {},
-      create: { name: "Cuidado Personal", slug: "cuidado-personal", description: "Productos de higiene y cuidado corporal", sortOrder: 2 },
+      create: {
+        name: "Cuidado Personal",
+        slug: "cuidado-personal",
+        description: "Productos de higiene y cuidado corporal",
+        sortOrder: 2,
+      },
     }),
     prisma.category.upsert({
       where: { slug: "equipos-medicos" },
       update: {},
-      create: { name: "Equipos Médicos", slug: "equipos-medicos", description: "Dispositivos y equipos para uso médico", sortOrder: 3 },
+      create: {
+        name: "Equipos Médicos",
+        slug: "equipos-medicos",
+        description: "Dispositivos y equipos para uso médico",
+        sortOrder: 3,
+      },
     }),
     prisma.category.upsert({
       where: { slug: "bienestar-natural" },
       update: {},
-      create: { name: "Bienestar Natural", slug: "bienestar-natural", description: "Productos naturales y orgánicos para la salud", sortOrder: 4 },
+      create: {
+        name: "Bienestar Natural",
+        slug: "bienestar-natural",
+        description: "Productos naturales y orgánicos para la salud",
+        sortOrder: 4,
+      },
     }),
     prisma.category.upsert({
       where: { slug: "fitness-deporte" },
       update: {},
-      create: { name: "Fitness y Deporte", slug: "fitness-deporte", description: "Productos para rendimiento deportivo y fitness", sortOrder: 5 },
+      create: {
+        name: "Fitness y Deporte",
+        slug: "fitness-deporte",
+        description: "Productos para rendimiento deportivo y fitness",
+        sortOrder: 5,
+      },
     }),
   ]);
 
@@ -128,30 +192,35 @@ async function main() {
     {
       name: "Colágeno Hidrolizado Premium",
       slug: "colageno-hidrolizado-premium",
-      description: "Colágeno hidrolizado tipo I y III de origen bovino. Contribuye a la salud de piel, cabello, uñas y articulaciones. Fórmula enriquecida con vitamina C para mejor absorción.",
+      description:
+        "Colágeno hidrolizado tipo I y III de origen bovino. Contribuye a la salud de piel, cabello, uñas y articulaciones. Fórmula enriquecida con vitamina C para mejor absorción.",
       shortDesc: "Colágeno tipo I y III con vitamina C para piel y articulaciones",
       sku: "SP-COL-001",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[0].id,
-      basePrice: 12.50,
+      basePrice: 12.5,
       baseCurrency: "USD" as Currency,
       weight: 0.35,
       tags: ["colágeno", "piel", "articulaciones", "vitamina-c"],
       metaTitle: "Colágeno Hidrolizado Premium - Salud ProLab",
       faqs: JSON.stringify([
-        { q: "¿Cuánto tiempo tarda en verse resultados?", a: "Generalmente entre 4-8 semanas de uso continuo." },
+        {
+          q: "¿Cuánto tiempo tarda en verse resultados?",
+          a: "Generalmente entre 4-8 semanas de uso continuo.",
+        },
         { q: "¿Tiene sabor?", a: "Disponible en sabor neutro y frutos rojos." },
       ]),
     },
     {
       name: "Omega 3 Ultra Concentrado",
       slug: "omega-3-ultra-concentrado",
-      description: "Aceite de pescado ultra concentrado con EPA y DHA. Apoya la salud cardiovascular, cerebral y articular. Cápsulas blandas de fácil digestión.",
+      description:
+        "Aceite de pescado ultra concentrado con EPA y DHA. Apoya la salud cardiovascular, cerebral y articular. Cápsulas blandas de fácil digestión.",
       shortDesc: "EPA + DHA concentrado para salud cardiovascular y cerebral",
       sku: "SP-OMG-002",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[0].id,
-      basePrice: 18.00,
+      basePrice: 18.0,
       baseCurrency: "USD" as Currency,
       weight: 0.25,
       tags: ["omega-3", "cardiovascular", "cerebral", "EPA", "DHA"],
@@ -160,12 +229,13 @@ async function main() {
     {
       name: "Proteína Whey Isolate",
       slug: "proteina-whey-isolate",
-      description: "Proteína de suero de leche aislada con 90% de pureza. 25g de proteína por porción. Ideal para recuperación muscular post-entrenamiento.",
+      description:
+        "Proteína de suero de leche aislada con 90% de pureza. 25g de proteína por porción. Ideal para recuperación muscular post-entrenamiento.",
       shortDesc: "Whey Isolate 90% pureza, 25g proteína por porción",
       sku: "SP-PRO-003",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[4].id,
-      basePrice: 35.00,
+      basePrice: 35.0,
       baseCurrency: "USD" as Currency,
       weight: 1.0,
       tags: ["proteína", "whey", "fitness", "músculo"],
@@ -174,12 +244,13 @@ async function main() {
     {
       name: "Kit Tensiómetro Digital",
       slug: "kit-tensiometro-digital",
-      description: "Tensiómetro digital de brazo con pantalla LCD grande. Memoria para 120 lecturas. Incluye brazalete ajustable y estuche de transporte.",
+      description:
+        "Tensiómetro digital de brazo con pantalla LCD grande. Memoria para 120 lecturas. Incluye brazalete ajustable y estuche de transporte.",
       shortDesc: "Tensiómetro digital LCD con memoria 120 lecturas",
       sku: "SP-TEN-004",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[2].id,
-      basePrice: 28.00,
+      basePrice: 28.0,
       baseCurrency: "USD" as Currency,
       weight: 0.4,
       tags: ["tensiómetro", "presión", "digital", "equipo-médico"],
@@ -188,12 +259,13 @@ async function main() {
     {
       name: "Crema Facial Ácido Hialurónico",
       slug: "crema-facial-acido-hialuronico",
-      description: "Crema hidratante facial con ácido hialurónico de triple peso molecular. Hidratación profunda, reduce líneas de expresión. Sin parabenos.",
+      description:
+        "Crema hidratante facial con ácido hialurónico de triple peso molecular. Hidratación profunda, reduce líneas de expresión. Sin parabenos.",
       shortDesc: "Hidratante facial con ácido hialurónico triple acción",
       sku: "SP-CRE-005",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[1].id,
-      basePrice: 15.00,
+      basePrice: 15.0,
       baseCurrency: "USD" as Currency,
       weight: 0.08,
       tags: ["facial", "ácido-hialurónico", "hidratante", "anti-edad"],
@@ -202,12 +274,13 @@ async function main() {
     {
       name: "Aceite Esencial de Lavanda Orgánico",
       slug: "aceite-esencial-lavanda-organico",
-      description: "Aceite esencial 100% puro de lavanda orgánica. Para aromaterapia, masajes y cuidado de la piel. Certificación orgánica USDA.",
+      description:
+        "Aceite esencial 100% puro de lavanda orgánica. Para aromaterapia, masajes y cuidado de la piel. Certificación orgánica USDA.",
       shortDesc: "Aceite esencial de lavanda 100% orgánico certificado",
       sku: "SP-ACE-006",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[3].id,
-      basePrice: 9.50,
+      basePrice: 9.5,
       baseCurrency: "USD" as Currency,
       weight: 0.05,
       tags: ["aceite-esencial", "lavanda", "orgánico", "aromaterapia"],
@@ -216,12 +289,13 @@ async function main() {
     {
       name: "Magnesio + Zinc + B6",
       slug: "magnesio-zinc-b6",
-      description: "Fórmula sinérgica de magnesio bisglicinato, zinc picolinato y vitamina B6. Apoya el sueño, la recuperación muscular y el sistema inmune.",
+      description:
+        "Fórmula sinérgica de magnesio bisglicinato, zinc picolinato y vitamina B6. Apoya el sueño, la recuperación muscular y el sistema inmune.",
       shortDesc: "Magnesio + Zinc + B6 para sueño y recuperación",
       sku: "SP-MAG-007",
       status: "DRAFT" as ProductStatus,
       categoryId: categories[0].id,
-      basePrice: 14.00,
+      basePrice: 14.0,
       baseCurrency: "USD" as Currency,
       weight: 0.2,
       tags: ["magnesio", "zinc", "vitamina-b6", "sueño", "inmune"],
@@ -230,12 +304,13 @@ async function main() {
     {
       name: "Banda de Resistencia Set Pro",
       slug: "banda-resistencia-set-pro",
-      description: "Set de 5 bandas de resistencia de látex natural con diferentes niveles. Incluye anclaje de puerta, manijas acolchadas y tobilleras. Bolsa de transporte.",
+      description:
+        "Set de 5 bandas de resistencia de látex natural con diferentes niveles. Incluye anclaje de puerta, manijas acolchadas y tobilleras. Bolsa de transporte.",
       shortDesc: "Set 5 bandas de resistencia con accesorios completos",
       sku: "SP-BAN-008",
       status: "ACTIVE" as ProductStatus,
       categoryId: categories[4].id,
-      basePrice: 22.00,
+      basePrice: 22.0,
       baseCurrency: "USD" as Currency,
       weight: 0.6,
       tags: ["bandas", "resistencia", "fitness", "entrenamiento"],
@@ -259,14 +334,70 @@ async function main() {
   await prisma.productVariant.createMany({
     skipDuplicates: true,
     data: [
-      { productId: products[0].id, name: "Sabor Neutro 300g", sku: "SP-COL-001-NEU", price: 12.50, stock: 150, attributes: JSON.stringify({ sabor: "neutro", peso: "300g" }) },
-      { productId: products[0].id, name: "Frutos Rojos 300g", sku: "SP-COL-001-FR", price: 13.00, stock: 100, attributes: JSON.stringify({ sabor: "frutos rojos", peso: "300g" }) },
-      { productId: products[0].id, name: "Sabor Neutro 500g", sku: "SP-COL-001-NEU5", price: 19.50, stock: 80, attributes: JSON.stringify({ sabor: "neutro", peso: "500g" }) },
-      { productId: products[2].id, name: "Chocolate 1kg", sku: "SP-PRO-003-CHO", price: 35.00, stock: 60, attributes: JSON.stringify({ sabor: "chocolate", peso: "1kg" }) },
-      { productId: products[2].id, name: "Vainilla 1kg", sku: "SP-PRO-003-VAN", price: 35.00, stock: 45, attributes: JSON.stringify({ sabor: "vainilla", peso: "1kg" }) },
-      { productId: products[2].id, name: "Sin Sabor 2kg", sku: "SP-PRO-003-SS2", price: 62.00, stock: 30, attributes: JSON.stringify({ sabor: "sin sabor", peso: "2kg" }) },
-      { productId: products[7].id, name: "Nivel Básico (3 bandas)", sku: "SP-BAN-008-BAS", price: 15.00, stock: 200, attributes: JSON.stringify({ nivel: "básico", cantidad: "3" }) },
-      { productId: products[7].id, name: "Nivel Pro (5 bandas)", sku: "SP-BAN-008-PRO", price: 22.00, stock: 120, attributes: JSON.stringify({ nivel: "pro", cantidad: "5" }) },
+      {
+        productId: products[0].id,
+        name: "Sabor Neutro 300g",
+        sku: "SP-COL-001-NEU",
+        price: 12.5,
+        stock: 150,
+        attributes: JSON.stringify({ sabor: "neutro", peso: "300g" }),
+      },
+      {
+        productId: products[0].id,
+        name: "Frutos Rojos 300g",
+        sku: "SP-COL-001-FR",
+        price: 13.0,
+        stock: 100,
+        attributes: JSON.stringify({ sabor: "frutos rojos", peso: "300g" }),
+      },
+      {
+        productId: products[0].id,
+        name: "Sabor Neutro 500g",
+        sku: "SP-COL-001-NEU5",
+        price: 19.5,
+        stock: 80,
+        attributes: JSON.stringify({ sabor: "neutro", peso: "500g" }),
+      },
+      {
+        productId: products[2].id,
+        name: "Chocolate 1kg",
+        sku: "SP-PRO-003-CHO",
+        price: 35.0,
+        stock: 60,
+        attributes: JSON.stringify({ sabor: "chocolate", peso: "1kg" }),
+      },
+      {
+        productId: products[2].id,
+        name: "Vainilla 1kg",
+        sku: "SP-PRO-003-VAN",
+        price: 35.0,
+        stock: 45,
+        attributes: JSON.stringify({ sabor: "vainilla", peso: "1kg" }),
+      },
+      {
+        productId: products[2].id,
+        name: "Sin Sabor 2kg",
+        sku: "SP-PRO-003-SS2",
+        price: 62.0,
+        stock: 30,
+        attributes: JSON.stringify({ sabor: "sin sabor", peso: "2kg" }),
+      },
+      {
+        productId: products[7].id,
+        name: "Nivel Básico (3 bandas)",
+        sku: "SP-BAN-008-BAS",
+        price: 15.0,
+        stock: 200,
+        attributes: JSON.stringify({ nivel: "básico", cantidad: "3" }),
+      },
+      {
+        productId: products[7].id,
+        name: "Nivel Pro (5 bandas)",
+        sku: "SP-BAN-008-PRO",
+        price: 22.0,
+        stock: 120,
+        attributes: JSON.stringify({ nivel: "pro", cantidad: "5" }),
+      },
     ],
   });
 
@@ -377,7 +508,7 @@ async function main() {
       researchNoteId: note2.id,
       competitor: "OmegaLab EC",
       url: "https://omegalab.ec",
-      price: 24.50,
+      price: 24.5,
       currency: "USD",
       rating: 4.0,
       reviewCount: 180,
@@ -402,7 +533,8 @@ async function main() {
     data: {
       title: "Lanzamiento Colágeno Premium Colombia",
       slug: "lanzamiento-colageno-premium-co",
-      description: "Playbook completo para el lanzamiento del Colágeno Hidrolizado Premium en el mercado colombiano",
+      description:
+        "Playbook completo para el lanzamiento del Colágeno Hidrolizado Premium en el mercado colombiano",
       status: "PUBLISHED",
       tags: ["lanzamiento", "colágeno", "colombia"],
       sections: {
@@ -410,37 +542,43 @@ async function main() {
           {
             phase: "ESTRATEGIA",
             title: "Estrategia de Lanzamiento",
-            content: "## Objetivo\nPosicionar el Colágeno Hidrolizado Premium como la opción premium-accesible en Colombia.\n\n## Meta\n- 500 unidades vendidas en primer mes\n- 100 reseñas positivas en 60 días\n- Presencia en 3 marketplaces\n\n## Diferenciador\nÚnico colágeno con vitamina C + doble sabor a precio competitivo.",
+            content:
+              "## Objetivo\nPosicionar el Colágeno Hidrolizado Premium como la opción premium-accesible en Colombia.\n\n## Meta\n- 500 unidades vendidas en primer mes\n- 100 reseñas positivas en 60 días\n- Presencia en 3 marketplaces\n\n## Diferenciador\nÚnico colágeno con vitamina C + doble sabor a precio competitivo.",
             sortOrder: 0,
           },
           {
             phase: "SEGMENTOS",
             title: "Segmentación de Mercado",
-            content: "## Segmento Primario\n**Mujer urbana 28-42 años**\n- NSE medio-alto\n- Interesada en bienestar y anti-aging\n- Activa en Instagram y TikTok\n- Compra online con frecuencia\n\n## Segmento Secundario\n**Deportistas 25-50 años**\n- Buscan recuperación articular\n- Comparan ingredientes\n- Valoran certificaciones",
+            content:
+              "## Segmento Primario\n**Mujer urbana 28-42 años**\n- NSE medio-alto\n- Interesada en bienestar y anti-aging\n- Activa en Instagram y TikTok\n- Compra online con frecuencia\n\n## Segmento Secundario\n**Deportistas 25-50 años**\n- Buscan recuperación articular\n- Comparan ingredientes\n- Valoran certificaciones",
             sortOrder: 1,
           },
           {
             phase: "FUNNEL",
             title: "Embudo de Conversión",
-            content: "## Awareness\n- Influencer marketing (micro-influencers salud)\n- Content marketing en Instagram/TikTok\n- Google Ads (keywords: colágeno hidrolizado)\n\n## Consideración\n- Landing page educativa\n- Comparativa vs competencia\n- Testimonios reales\n\n## Conversión\n- Oferta de lanzamiento 15% OFF\n- Bundle colágeno + shaker\n- Garantía de satisfacción 30 días",
+            content:
+              "## Awareness\n- Influencer marketing (micro-influencers salud)\n- Content marketing en Instagram/TikTok\n- Google Ads (keywords: colágeno hidrolizado)\n\n## Consideración\n- Landing page educativa\n- Comparativa vs competencia\n- Testimonios reales\n\n## Conversión\n- Oferta de lanzamiento 15% OFF\n- Bundle colágeno + shaker\n- Garantía de satisfacción 30 días",
             sortOrder: 2,
           },
           {
             phase: "EJECUCION",
             title: "Plan de Ejecución",
-            content: "## Semana 1-2: Pre-lanzamiento\n- Teaser en redes sociales\n- Lista de espera con descuento\n- Envío a influencers\n\n## Semana 3-4: Lanzamiento\n- Activación de campañas pagadas\n- Live shopping en Instagram\n- Email marketing a base existente\n\n## Semana 5-8: Optimización\n- Retargeting a visitantes\n- UGC (User Generated Content)\n- Reviews en marketplaces",
+            content:
+              "## Semana 1-2: Pre-lanzamiento\n- Teaser en redes sociales\n- Lista de espera con descuento\n- Envío a influencers\n\n## Semana 3-4: Lanzamiento\n- Activación de campañas pagadas\n- Live shopping en Instagram\n- Email marketing a base existente\n\n## Semana 5-8: Optimización\n- Retargeting a visitantes\n- UGC (User Generated Content)\n- Reviews en marketplaces",
             sortOrder: 3,
           },
           {
             phase: "RECURSOS",
             title: "Recursos Necesarios",
-            content: "## Presupuesto\n- Influencers: $500 USD\n- Ads (Meta + Google): $1,000 USD/mes\n- Contenido: $300 USD\n- Muestras: $200 USD\n\n## Equipo\n- Community Manager (medio tiempo)\n- Diseñador gráfico (freelance)\n- Copywriter\n\n## Herramientas\n- Canva Pro\n- Meta Business Suite\n- Google Analytics 4",
+            content:
+              "## Presupuesto\n- Influencers: $500 USD\n- Ads (Meta + Google): $1,000 USD/mes\n- Contenido: $300 USD\n- Muestras: $200 USD\n\n## Equipo\n- Community Manager (medio tiempo)\n- Diseñador gráfico (freelance)\n- Copywriter\n\n## Herramientas\n- Canva Pro\n- Meta Business Suite\n- Google Analytics 4",
             sortOrder: 4,
           },
           {
             phase: "ANALISIS",
             title: "Métricas y Análisis",
-            content: "## KPIs Principales\n- **ROAS**: Meta >3x\n- **CPA**: <$8 USD\n- **Tasa de conversión**: >2.5%\n- **LTV/CAC ratio**: >3\n\n## Seguimiento\n- Dashboard semanal\n- Reunión quincenal de resultados\n- Ajuste de presupuesto mensual\n\n## Herramientas de Medición\n- Google Analytics 4\n- Meta Ads Manager\n- Hotjar (heatmaps landing)",
+            content:
+              "## KPIs Principales\n- **ROAS**: Meta >3x\n- **CPA**: <$8 USD\n- **Tasa de conversión**: >2.5%\n- **LTV/CAC ratio**: >3\n\n## Seguimiento\n- Dashboard semanal\n- Reunión quincenal de resultados\n- Ajuste de presupuesto mensual\n\n## Herramientas de Medición\n- Google Analytics 4\n- Meta Ads Manager\n- Hotjar (heatmaps landing)",
             sortOrder: 5,
           },
         ],
@@ -460,13 +598,15 @@ async function main() {
           {
             phase: "ESTRATEGIA",
             title: "Estrategia WhatsApp",
-            content: "## Objetivo\nImplementar canal de ventas vía WhatsApp Business API.\n\n## Alcance\n- Catálogo de productos en WhatsApp\n- Atención al cliente automatizada\n- Seguimiento post-venta",
+            content:
+              "## Objetivo\nImplementar canal de ventas vía WhatsApp Business API.\n\n## Alcance\n- Catálogo de productos en WhatsApp\n- Atención al cliente automatizada\n- Seguimiento post-venta",
             sortOrder: 0,
           },
           {
             phase: "SEGMENTOS",
             title: "Audiencia WhatsApp",
-            content: "## Target\n- Clientes existentes para recompra\n- Leads de redes sociales\n- Referidos de clientes actuales",
+            content:
+              "## Target\n- Clientes existentes para recompra\n- Leads de redes sociales\n- Referidos de clientes actuales",
             sortOrder: 1,
           },
         ],
@@ -495,7 +635,16 @@ async function main() {
         type: "SOCIAL",
         subject: "",
         body: "🚀 ¡NUEVO PRODUCTO!\n\n{{nombre_producto}}\n\n{{descripcion_corta}}\n\n✅ {{beneficio_1}}\n✅ {{beneficio_2}}\n✅ {{beneficio_3}}\n\n💰 Precio especial de lanzamiento: {{precio}}\n🔗 Link en bio\n\n#SaludProLab #{{hashtag_1}} #{{hashtag_2}}",
-        variables: ["nombre_producto", "descripcion_corta", "beneficio_1", "beneficio_2", "beneficio_3", "precio", "hashtag_1", "hashtag_2"],
+        variables: [
+          "nombre_producto",
+          "descripcion_corta",
+          "beneficio_1",
+          "beneficio_2",
+          "beneficio_3",
+          "precio",
+          "hashtag_1",
+          "hashtag_2",
+        ],
         tags: ["lanzamiento", "social-media", "producto"],
       },
       {
@@ -512,8 +661,21 @@ async function main() {
         slug: "landing-page-producto",
         type: "LANDING",
         subject: "{{titulo_pagina}}",
-        body: "# {{nombre_producto}}\n\n## {{subtitulo}}\n\n{{descripcion}}\n\n### Beneficios\n- {{beneficio_1}}\n- {{beneficio_2}}\n- {{beneficio_3}}\n\n### Lo que dicen nuestros clientes\n\"{{testimonio}}\" - {{nombre_cliente}}\n\n### Precio\n{{precio}} | {{descuento}} de descuento\n\n[COMPRAR AHORA]({{url_compra}})",
-        variables: ["nombre_producto", "subtitulo", "descripcion", "beneficio_1", "beneficio_2", "beneficio_3", "testimonio", "nombre_cliente", "precio", "descuento", "url_compra", "titulo_pagina"],
+        body: '# {{nombre_producto}}\n\n## {{subtitulo}}\n\n{{descripcion}}\n\n### Beneficios\n- {{beneficio_1}}\n- {{beneficio_2}}\n- {{beneficio_3}}\n\n### Lo que dicen nuestros clientes\n"{{testimonio}}" - {{nombre_cliente}}\n\n### Precio\n{{precio}} | {{descuento}} de descuento\n\n[COMPRAR AHORA]({{url_compra}})',
+        variables: [
+          "nombre_producto",
+          "subtitulo",
+          "descripcion",
+          "beneficio_1",
+          "beneficio_2",
+          "beneficio_3",
+          "testimonio",
+          "nombre_cliente",
+          "precio",
+          "descuento",
+          "url_compra",
+          "titulo_pagina",
+        ],
         tags: ["landing", "ventas", "producto"],
       },
     ],
@@ -540,14 +702,409 @@ async function main() {
 
   console.log("✅ Collections created");
 
+  // ── Update Products with Business Model Fields ────────────
+  await prisma.product.update({
+    where: { id: products[0].id },
+    data: {
+      businessModel: "DROPSHIPPING",
+      isProgrammableDropshipping: true,
+      subscriptionAllowed: true,
+    },
+  });
+  await prisma.product.update({
+    where: { id: products[1].id },
+    data: {
+      businessModel: "DROPSHIPPING",
+      isProgrammableDropshipping: true,
+      subscriptionAllowed: false,
+    },
+  });
+  await prisma.product.update({
+    where: { id: products[2].id },
+    data: {
+      businessModel: "HIBRIDO",
+      minimumOrderQuantity: 10,
+      minimumInvestment: 350,
+      productionTimeDays: 15,
+      isProgrammableDropshipping: true,
+      subscriptionAllowed: true,
+    },
+  });
+  await prisma.product.update({
+    where: { id: products[3].id },
+    data: {
+      businessModel: "MAQUILA",
+      minimumOrderQuantity: 50,
+      minimumInvestment: 1400,
+      productionTimeDays: 30,
+    },
+  });
+  await prisma.product.update({
+    where: { id: products[4].id },
+    data: {
+      businessModel: "DROPSHIPPING",
+      isProgrammableDropshipping: false,
+      subscriptionAllowed: true,
+    },
+  });
+  await prisma.product.update({
+    where: { id: products[5].id },
+    data: { businessModel: "DROPSHIPPING" },
+  });
+  await prisma.product.update({
+    where: { id: products[6].id },
+    data: {
+      businessModel: "MAQUILA",
+      minimumOrderQuantity: 100,
+      minimumInvestment: 1400,
+      productionTimeDays: 21,
+    },
+  });
+  await prisma.product.update({
+    where: { id: products[7].id },
+    data: { businessModel: "DROPSHIPPING", isProgrammableDropshipping: true },
+  });
+
+  console.log("✅ Business model fields updated");
+
+  // ── Distributors ──────────────────────────────────────────
+  const distributor1 = await prisma.distributor.create({
+    data: {
+      companyName: "NaturaTienda CO",
+      taxId: "900123456-1",
+      phone: "+57 310 555 1234",
+      address: "Cra 15 #82-31 Of 402",
+      city: "Bogotá",
+      country: "CO",
+      notes: "Tienda online de productos naturales. Buen volumen de ventas.",
+      userId: users[3].id,
+    },
+  });
+
+  const distributor2 = await prisma.distributor.create({
+    data: {
+      companyName: "SaludEC Store",
+      taxId: "1792456780001",
+      phone: "+593 99 888 7654",
+      address: "Av. República E7-123",
+      city: "Quito",
+      country: "EC",
+      notes: "Distribuidor en Ecuador. Enfoque en suplementos.",
+      userId: users[3].id,
+    },
+  });
+
+  console.log("✅ Distributors created");
+
+  // ── Price Tiers ───────────────────────────────────────────
+  await prisma.priceTier.createMany({
+    data: [
+      // Colágeno - Colombia
+      {
+        productId: products[0].id,
+        countryId: colombia.id,
+        minQuantity: 1,
+        maxQuantity: 9,
+        costPrice: 12.5,
+        suggestedRetail: 25.0,
+      },
+      {
+        productId: products[0].id,
+        countryId: colombia.id,
+        minQuantity: 10,
+        maxQuantity: 49,
+        costPrice: 10.5,
+        suggestedRetail: 23.0,
+      },
+      {
+        productId: products[0].id,
+        countryId: colombia.id,
+        minQuantity: 50,
+        maxQuantity: null,
+        costPrice: 8.5,
+        suggestedRetail: 20.0,
+      },
+      // Colágeno - Ecuador
+      {
+        productId: products[0].id,
+        countryId: ecuador.id,
+        minQuantity: 1,
+        maxQuantity: 9,
+        costPrice: 13.0,
+        suggestedRetail: 26.0,
+      },
+      {
+        productId: products[0].id,
+        countryId: ecuador.id,
+        minQuantity: 10,
+        maxQuantity: null,
+        costPrice: 11.0,
+        suggestedRetail: 22.0,
+      },
+      // Omega 3
+      {
+        productId: products[1].id,
+        countryId: colombia.id,
+        minQuantity: 1,
+        maxQuantity: 19,
+        costPrice: 18.0,
+        suggestedRetail: 35.0,
+      },
+      {
+        productId: products[1].id,
+        countryId: colombia.id,
+        minQuantity: 20,
+        maxQuantity: null,
+        costPrice: 14.5,
+        suggestedRetail: 30.0,
+      },
+      // Proteína
+      {
+        productId: products[2].id,
+        countryId: colombia.id,
+        minQuantity: 1,
+        maxQuantity: 4,
+        costPrice: 35.0,
+        suggestedRetail: 65.0,
+      },
+      {
+        productId: products[2].id,
+        countryId: colombia.id,
+        minQuantity: 5,
+        maxQuantity: null,
+        costPrice: 28.0,
+        suggestedRetail: 55.0,
+      },
+      // Crema Facial
+      {
+        productId: products[4].id,
+        countryId: colombia.id,
+        minQuantity: 1,
+        maxQuantity: 24,
+        costPrice: 15.0,
+        suggestedRetail: 30.0,
+      },
+      {
+        productId: products[4].id,
+        countryId: colombia.id,
+        minQuantity: 25,
+        maxQuantity: null,
+        costPrice: 11.0,
+        suggestedRetail: 25.0,
+      },
+    ],
+  });
+
+  console.log("✅ Price tiers created");
+
+  // ── Orders ────────────────────────────────────────────────
+  const order1 = await prisma.order.create({
+    data: {
+      orderNumber: "ORD-2024-0001",
+      distributorId: distributor1.id,
+      type: "DROPSHIPPING_INMEDIATO",
+      status: "CONFIRMADO",
+      subtotal: 75.0,
+      tax: 14.25,
+      total: 89.25,
+      shippingAddress: "Cll 100 #15-20, Bogotá",
+      notes: "Primer pedido de prueba",
+      items: {
+        create: [
+          {
+            productId: products[0].id,
+            variantInfo: "Sabor Neutro 300g",
+            quantity: 3,
+            unitPrice: 12.5,
+            totalPrice: 37.5,
+          },
+          { productId: products[4].id, quantity: 2, unitPrice: 15.0, totalPrice: 30.0 },
+          { productId: products[5].id, quantity: 1, unitPrice: 9.5, totalPrice: 9.5 },
+        ],
+      },
+      statusHistory: {
+        create: [
+          { status: "PENDIENTE", notes: "Pedido creado" },
+          { status: "CONFIRMADO", notes: "Confirmado por admin" },
+        ],
+      },
+    },
+  });
+
+  const order2 = await prisma.order.create({
+    data: {
+      orderNumber: "ORD-2024-0002",
+      distributorId: distributor1.id,
+      type: "MAQUILA_PRODUCCION",
+      status: "EN_PRODUCCION",
+      subtotal: 1400.0,
+      tax: 266.0,
+      total: 1666.0,
+      shippingAddress: "Cra 15 #82-31 Of 402, Bogotá",
+      notes: "Pedido maquila - marca propia NaturaTienda",
+      items: {
+        create: [
+          {
+            productId: products[2].id,
+            variantInfo: "Chocolate 1kg - Etiqueta personalizada",
+            quantity: 40,
+            unitPrice: 35.0,
+            totalPrice: 1400.0,
+          },
+        ],
+      },
+      statusHistory: {
+        create: [
+          { status: "PENDIENTE", notes: "Pedido de maquila creado" },
+          { status: "CONFIRMADO", notes: "Aprobado para producción" },
+          { status: "EN_PRODUCCION", notes: "En línea de producción, estimado 15 días" },
+        ],
+      },
+    },
+  });
+
+  const order3 = await prisma.order.create({
+    data: {
+      orderNumber: "ORD-2024-0003",
+      distributorId: distributor2.id,
+      type: "DROPSHIPPING_INMEDIATO",
+      status: "ENVIADO",
+      subtotal: 54.0,
+      tax: 6.48,
+      total: 60.48,
+      trackingNumber: "EC-TRACK-20240301",
+      shippingAddress: "Av. República E7-123, Quito, Ecuador",
+      items: {
+        create: [{ productId: products[1].id, quantity: 3, unitPrice: 18.0, totalPrice: 54.0 }],
+      },
+      statusHistory: {
+        create: [
+          { status: "PENDIENTE" },
+          { status: "CONFIRMADO" },
+          { status: "ENVIADO", notes: "Enviado via Servientrega Internacional" },
+        ],
+      },
+    },
+  });
+
+  console.log("✅ Orders created");
+
+  // ── Scheduled Orders ──────────────────────────────────────
+  await prisma.scheduledOrder.create({
+    data: {
+      distributorId: distributor1.id,
+      productId: products[0].id,
+      frequency: "monthly",
+      quantity: 30,
+      nextDelivery: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
+      active: true,
+      notes: "Reposición mensual de colágeno",
+    },
+  });
+
+  await prisma.scheduledOrder.create({
+    data: {
+      distributorId: distributor1.id,
+      productId: products[7].id,
+      frequency: "biweekly",
+      quantity: 20,
+      nextDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      active: true,
+      notes: "Bandas de resistencia - alta rotación",
+    },
+  });
+
+  console.log("✅ Scheduled orders created");
+
+  // ── Platform Product References ───────────────────────────
+  await prisma.platformProductReference.createMany({
+    data: [
+      {
+        productId: products[0].id,
+        distributorId: distributor1.id,
+        platformName: "DROPI",
+        platformProductId: "DRP-COL-8821",
+        syncEnabled: true,
+      },
+      {
+        productId: products[0].id,
+        distributorId: distributor1.id,
+        platformName: "SHOPIFY",
+        platformProductId: "7654321098765",
+        platformVariantId: "43210987654321",
+        syncEnabled: true,
+      },
+      {
+        productId: products[1].id,
+        distributorId: distributor1.id,
+        platformName: "DROPI",
+        platformProductId: "DRP-OMG-3344",
+        syncEnabled: true,
+      },
+      {
+        productId: products[4].id,
+        distributorId: distributor1.id,
+        platformName: "EFFI",
+        platformProductId: "EFFI-CRM-5501",
+        syncEnabled: false,
+      },
+      {
+        productId: products[7].id,
+        distributorId: distributor1.id,
+        platformName: "HOKO",
+        platformProductId: "HK-BAN-9012",
+        syncEnabled: true,
+      },
+      {
+        productId: products[0].id,
+        distributorId: distributor2.id,
+        platformName: "MASTERSHOP",
+        platformProductId: "MS-COL-EC-001",
+        syncEnabled: true,
+      },
+    ],
+  });
+
+  console.log("✅ Platform references created");
+
   // ── Audit Logs ──────────────────────────────────────────
   await prisma.auditLog.createMany({
     data: [
-      { userId: users[0].id, action: "CREATE", entity: "Product", entityId: products[0].id, details: JSON.stringify({ name: products[0].name }) },
-      { userId: users[0].id, action: "CREATE", entity: "Product", entityId: products[1].id, details: JSON.stringify({ name: products[1].name }) },
-      { userId: users[1].id, action: "UPDATE", entity: "Product", entityId: products[0].id, details: JSON.stringify({ field: "status", from: "DRAFT", to: "ACTIVE" }) },
-      { userId: users[2].id, action: "CREATE", entity: "ResearchNote", entityId: note1.id, details: JSON.stringify({ title: note1.title }) },
-      { userId: users[0].id, action: "CREATE", entity: "Playbook", entityId: playbook1.id, details: JSON.stringify({ title: playbook1.title }) },
+      {
+        userId: users[0].id,
+        action: "CREATE",
+        entity: "Product",
+        entityId: products[0].id,
+        details: JSON.stringify({ name: products[0].name }),
+      },
+      {
+        userId: users[0].id,
+        action: "CREATE",
+        entity: "Product",
+        entityId: products[1].id,
+        details: JSON.stringify({ name: products[1].name }),
+      },
+      {
+        userId: users[1].id,
+        action: "UPDATE",
+        entity: "Product",
+        entityId: products[0].id,
+        details: JSON.stringify({ field: "status", from: "DRAFT", to: "ACTIVE" }),
+      },
+      {
+        userId: users[2].id,
+        action: "CREATE",
+        entity: "ResearchNote",
+        entityId: note1.id,
+        details: JSON.stringify({ title: note1.title }),
+      },
+      {
+        userId: users[0].id,
+        action: "CREATE",
+        entity: "Playbook",
+        entityId: playbook1.id,
+        details: JSON.stringify({ title: playbook1.title }),
+      },
     ],
   });
 

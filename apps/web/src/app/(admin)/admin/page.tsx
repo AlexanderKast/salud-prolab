@@ -1,6 +1,11 @@
 "use client";
 
-import { useAdminUsers, useAdminSuppliers, useAdminCategories, useAuditLogs } from "@/hooks/use-admin";
+import {
+  useAdminUsers,
+  useAdminSuppliers,
+  useAdminCategories,
+  useAuditLogs,
+} from "@/hooks/use-admin";
 import { useProducts } from "@/hooks/use-products";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -16,14 +21,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import Link from "next/link";
-import {
-  Users,
-  Truck,
-  FolderTree,
-  Package,
-  FileText,
-  ArrowRight,
-} from "lucide-react";
+import { Users, Truck, FolderTree, Package, FileText, ArrowRight } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const users = useAdminUsers();
@@ -37,10 +35,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Panel de Administracion"
-        description="Resumen general del sistema"
-      />
+      <PageHeader title="Panel de Administracion" description="Resumen general del sistema" />
 
       {/* Stats */}
       {isLoading ? (
@@ -76,9 +71,7 @@ export default function AdminDashboardPage() {
 
       {/* Quick Links */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-3">
-          Accesos rapidos
-        </h2>
+        <h2 className="text-lg font-semibold text-[var(--foreground)] mb-3">Accesos rapidos</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { href: "/admin/usuarios", label: "Usuarios", icon: Users },
@@ -92,9 +85,7 @@ export default function AdminDashboardPage() {
               className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 hover:bg-[var(--muted)] transition-colors"
             >
               <link.icon className="h-5 w-5 text-[var(--primary)]" />
-              <span className="font-medium text-[var(--foreground)]">
-                {link.label}
-              </span>
+              <span className="font-medium text-[var(--foreground)]">{link.label}</span>
               <ArrowRight className="h-4 w-4 ml-auto text-[var(--muted-foreground)]" />
             </Link>
           ))}
@@ -129,14 +120,12 @@ export default function AdminDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(audit.data?.data ?? audit.data ?? [])
+                {(Array.isArray(audit.data?.data) ? audit.data.data : [])
                   .slice(0, 5)
                   .map((log: Record<string, string>) => (
                     <TableRow key={log.id}>
                       <TableCell className="text-sm">
-                        {log.createdAt
-                          ? new Date(log.createdAt).toLocaleString("es")
-                          : "-"}
+                        {log.createdAt ? new Date(log.createdAt).toLocaleString("es") : "-"}
                       </TableCell>
                       <TableCell>{log.userName ?? log.userId ?? "-"}</TableCell>
                       <TableCell>

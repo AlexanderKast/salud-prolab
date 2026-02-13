@@ -14,12 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function AdminProveedoresPage() {
@@ -101,11 +96,7 @@ export default function AdminProveedoresPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(row.id as string)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleDelete(row.id as string)}>
             <Trash2 className="h-4 w-4 text-[var(--destructive)]" />
           </Button>
         </div>
@@ -131,7 +122,7 @@ export default function AdminProveedoresPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={suppliers.data?.data ?? suppliers.data ?? []}
+          data={Array.isArray(suppliers.data?.data) ? suppliers.data.data : []}
           emptyMessage="No hay proveedores registrados"
         />
       )}
@@ -139,9 +130,7 @@ export default function AdminProveedoresPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editing ? "Editar proveedor" : "Nuevo proveedor"}
-            </DialogTitle>
+            <DialogTitle>{editing ? "Editar proveedor" : "Nuevo proveedor"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
@@ -195,9 +184,7 @@ export default function AdminProveedoresPage() {
                 onClick={handleSave}
                 disabled={createSupplier.isPending || updateSupplier.isPending}
               >
-                {(createSupplier.isPending || updateSupplier.isPending)
-                  ? "Guardando..."
-                  : "Guardar"}
+                {createSupplier.isPending || updateSupplier.isPending ? "Guardando..." : "Guardar"}
               </Button>
             </div>
           </div>

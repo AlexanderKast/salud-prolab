@@ -15,12 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectOption } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function AdminCategoriasPage() {
@@ -32,7 +27,7 @@ export default function AdminCategoriasPage() {
   const [editing, setEditing] = useState<Record<string, unknown> | null>(null);
   const [form, setForm] = useState({ name: "", slug: "", parentId: "" });
 
-  const allCategories = categories.data?.data ?? categories.data ?? [];
+  const allCategories = Array.isArray(categories.data?.data) ? categories.data.data : [];
 
   const openCreate = () => {
     setEditing(null);
@@ -71,13 +66,16 @@ export default function AdminCategoriasPage() {
     }
   };
 
-  const columns: { key: string; header: string; render?: (row: Record<string, unknown>) => React.ReactNode; className?: string }[] = [
+  const columns: {
+    key: string;
+    header: string;
+    render?: (row: Record<string, unknown>) => React.ReactNode;
+    className?: string;
+  }[] = [
     {
       key: "name",
       header: "Nombre",
-      render: (row) => (
-        <span className="font-medium">{row.name as string}</span>
-      ),
+      render: (row) => <span className="font-medium">{row.name as string}</span>,
     },
     { key: "slug", header: "Slug" },
     {
@@ -85,9 +83,7 @@ export default function AdminCategoriasPage() {
       header: "Categoria padre",
       render: (row) => {
         if (!row.parentId) return "-";
-        const parent = allCategories.find(
-          (c: Record<string, unknown>) => c.id === row.parentId
-        );
+        const parent = allCategories.find((c: Record<string, unknown>) => c.id === row.parentId);
         return String((parent as Record<string, unknown>)?.name ?? row.parentId);
       },
     },
@@ -113,11 +109,7 @@ export default function AdminCategoriasPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(row.id as string)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleDelete(row.id as string)}>
             <Trash2 className="h-4 w-4 text-[var(--destructive)]" />
           </Button>
         </div>
@@ -151,9 +143,7 @@ export default function AdminCategoriasPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editing ? "Editar categoria" : "Nueva categoria"}
-            </DialogTitle>
+            <DialogTitle>{editing ? "Editar categoria" : "Nueva categoria"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
@@ -196,9 +186,7 @@ export default function AdminCategoriasPage() {
                 onClick={handleSave}
                 disabled={createCategory.isPending || updateCategory.isPending}
               >
-                {(createCategory.isPending || updateCategory.isPending)
-                  ? "Guardando..."
-                  : "Guardar"}
+                {createCategory.isPending || updateCategory.isPending ? "Guardando..." : "Guardar"}
               </Button>
             </div>
           </div>

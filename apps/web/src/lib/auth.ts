@@ -28,7 +28,8 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: PrismaAdapter(prisma) as any,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -53,10 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
+        const isValid = await bcrypt.compare(credentials.password as string, user.passwordHash);
 
         if (!isValid) {
           return null;
@@ -86,22 +84,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as Role;
       }
       return session;
-    },
-    async authorized({ auth, request }) {
-      const isLoggedIn = !!auth?.user;
-      const { pathname } = request.nextUrl;
-
-      // Public routes
-      if (pathname.startsWith("/login") || pathname.startsWith("/api/auth")) {
-        return true;
-      }
-
-      // Redirect unauthenticated users to login
-      if (!isLoggedIn) {
-        return false;
-      }
-
-      return true;
     },
   },
 });

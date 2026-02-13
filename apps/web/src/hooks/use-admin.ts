@@ -83,9 +83,7 @@ export function useDeleteSupplier() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetch(`/api/admin/suppliers/${id}`, { method: "DELETE" }).then((r) =>
-        r.json()
-      ),
+      fetch(`/api/admin/suppliers/${id}`, { method: "DELETE" }).then((r) => r.json()),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-suppliers"] }),
   });
 }
@@ -128,9 +126,7 @@ export function useDeleteCategory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetch(`/api/admin/categories/${id}`, { method: "DELETE" }).then((r) =>
-        r.json()
-      ),
+      fetch(`/api/admin/categories/${id}`, { method: "DELETE" }).then((r) => r.json()),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-categories"] }),
   });
 }
@@ -173,9 +169,7 @@ export function useDeleteCountry() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetch(`/api/admin/countries/${id}`, { method: "DELETE" }).then((r) =>
-        r.json()
-      ),
+      fetch(`/api/admin/countries/${id}`, { method: "DELETE" }).then((r) => r.json()),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-countries"] }),
   });
 }
@@ -185,6 +179,6 @@ export function useAuditLogs(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters);
   return useQuery({
     queryKey: ["audit-logs", filters],
-    queryFn: () => fetch(`/api/admin/audit?${params}`).then((r) => r.json()),
+    queryFn: () => fetch(`/api/admin/audit-logs?${params}`).then((r) => r.json()),
   });
 }

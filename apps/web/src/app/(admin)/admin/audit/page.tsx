@@ -26,7 +26,7 @@ export default function AdminAuditPage() {
     setPage(1);
   };
 
-  const logs = audit.data?.data ?? audit.data ?? [];
+  const logs = Array.isArray(audit.data?.data) ? audit.data.data : [];
   const totalPages = audit.data?.totalPages ?? 1;
 
   const columns = [
@@ -34,9 +34,7 @@ export default function AdminAuditPage() {
       key: "createdAt",
       header: "Fecha y hora",
       render: (row: Record<string, unknown>) =>
-        row.createdAt
-          ? new Date(row.createdAt as string).toLocaleString("es")
-          : "-",
+        row.createdAt ? new Date(row.createdAt as string).toLocaleString("es") : "-",
     },
     {
       key: "userName",

@@ -13,9 +13,12 @@
     "db:push": "pnpm --filter @salud-prolab/database push",
     "db:seed": "pnpm --filter @salud-prolab/database seed",
     "db:studio": "pnpm --filter @salud-prolab/database studio",
-    "clean": "turbo clean && rm -rf node_modules"
+    "clean": "turbo clean && rm -rf node_modules",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.5.3",
     "turbo": "^2.5.0"
   },
@@ -27,6 +30,14 @@
       "esbuild",
       "sharp",
       "unrs-resolver"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
     ]
   },
   "packageManager": "pnpm@10.29.3",

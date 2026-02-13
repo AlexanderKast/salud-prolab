@@ -10,12 +10,7 @@ import { ProductFilters } from "@/components/catalog/product-filters";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ProductGridSkeleton } from "@/components/shared/loading-skeleton";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectOption } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 
@@ -56,8 +51,8 @@ export default function CatalogoPage() {
     }
   };
 
-  const items = products.data?.data ?? products.data ?? [];
-  const totalPages = products.data?.totalPages ?? 1;
+  const items = Array.isArray(products.data?.data) ? products.data.data : [];
+  const totalPages = products.data?.pagination?.totalPages ?? products.data?.totalPages ?? 1;
 
   return (
     <div>
@@ -69,10 +64,10 @@ export default function CatalogoPage() {
       <ProductFilters
         filters={filters}
         onChange={handleFilterChange}
-        categories={(categories.data?.data ?? categories.data ?? []).map(
+        categories={(Array.isArray(categories.data?.data) ? categories.data.data : []).map(
           (c: Record<string, string>) => ({ id: c.id, name: c.name })
         )}
-        countries={(countries.data?.data ?? countries.data ?? []).map(
+        countries={(Array.isArray(countries.data?.data) ? countries.data.data : []).map(
           (c: Record<string, string>) => ({ id: c.id, name: c.name })
         )}
       />
@@ -138,13 +133,11 @@ export default function CatalogoPage() {
               onChange={(e) => setSelectedCollectionId(e.target.value)}
             >
               <SelectOption value="">Seleccionar coleccion...</SelectOption>
-              {(collections.data ?? []).map(
-                (col: Record<string, string>) => (
-                  <SelectOption key={col.id} value={col.id}>
-                    {col.name}
-                  </SelectOption>
-                )
-              )}
+              {(collections.data?.data ?? []).map((col: Record<string, string>) => (
+                <SelectOption key={col.id} value={col.id}>
+                  {col.name}
+                </SelectOption>
+              ))}
             </Select>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setAddDialogOpen(false)}>

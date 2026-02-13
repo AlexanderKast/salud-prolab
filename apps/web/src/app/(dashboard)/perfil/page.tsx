@@ -64,9 +64,7 @@ export default function PerfilPage() {
             <h2 className="text-xl font-semibold text-[var(--foreground)]">
               {session?.user?.name ?? "Usuario"}
             </h2>
-            <p className="text-sm text-[var(--muted-foreground)]">
-              {session?.user?.email}
-            </p>
+            <p className="text-sm text-[var(--muted-foreground)]">{session?.user?.email}</p>
             <Badge className="mt-1">
               {roleLabels[session?.user?.role ?? ""] ?? session?.user?.role}
             </Badge>
@@ -127,7 +125,7 @@ export default function PerfilPage() {
 
         {collections.isLoading ? (
           <CardsSkeleton count={3} />
-        ) : (collections.data ?? []).length === 0 ? (
+        ) : (collections.data?.data ?? []).length === 0 ? (
           <EmptyState
             icon={FolderOpen}
             title="Sin colecciones"
@@ -135,37 +133,33 @@ export default function PerfilPage() {
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(collections.data ?? []).map(
-              (col: Record<string, unknown>) => (
-                <div
-                  key={col.id as string}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-[var(--foreground)]">
-                        {col.name as string}
-                      </h3>
-                      {col.description && (
-                        <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-                          {col.description as string}
-                        </p>
-                      )}
-                    </div>
-                    <FolderOpen className="h-5 w-5 text-[var(--muted-foreground)]" />
+            {(collections.data?.data ?? []).map((col: Record<string, unknown>) => (
+              <div
+                key={col.id as string}
+                className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-[var(--foreground)]">{col.name as string}</h3>
+                    {(col.description as string) ? (
+                      <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+                        {col.description as string}
+                      </p>
+                    ) : null}
                   </div>
-                  <p className="text-sm text-[var(--muted-foreground)] mt-2">
-                    {(col.itemCount as number) ?? 0} productos
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-3 w-full" asChild>
-                    <Link href={`/perfil/coleccion/${col.id}`}>
-                      <Eye className="h-3.5 w-3.5 mr-1" />
-                      Ver coleccion
-                    </Link>
-                  </Button>
+                  <FolderOpen className="h-5 w-5 text-[var(--muted-foreground)]" />
                 </div>
-              )
-            )}
+                <p className="text-sm text-[var(--muted-foreground)] mt-2">
+                  {(col.itemCount as number) ?? 0} productos
+                </p>
+                <Button variant="outline" size="sm" className="mt-3 w-full" asChild>
+                  <Link href={`/perfil/coleccion/${col.id}`}>
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    Ver coleccion
+                  </Link>
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </div>

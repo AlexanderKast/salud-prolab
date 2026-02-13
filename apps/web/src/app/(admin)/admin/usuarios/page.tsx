@@ -10,12 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectOption } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Pencil, UserX } from "lucide-react";
 
 const roleOptions = [
@@ -77,20 +72,32 @@ export default function AdminUsuariosPage() {
   };
 
   const columns = [
-    { key: "name", header: "Nombre", render: (row: Record<string, unknown>) => (
-      <span className="font-medium">{row.name as string}</span>
-    )},
+    {
+      key: "name",
+      header: "Nombre",
+      render: (row: Record<string, unknown>) => (
+        <span className="font-medium">{row.name as string}</span>
+      ),
+    },
     { key: "email", header: "Email" },
-    { key: "role", header: "Rol", render: (row: Record<string, unknown>) => (
-      <Badge variant="outline">
-        {roleOptions.find((r) => r.value === row.role)?.label ?? (row.role as string)}
-      </Badge>
-    )},
-    { key: "active", header: "Estado", render: (row: Record<string, unknown>) => (
-      <Badge variant={row.active ? "default" : "secondary"}>
-        {row.active ? "Activo" : "Inactivo"}
-      </Badge>
-    )},
+    {
+      key: "role",
+      header: "Rol",
+      render: (row: Record<string, unknown>) => (
+        <Badge variant="outline">
+          {roleOptions.find((r) => r.value === row.role)?.label ?? (row.role as string)}
+        </Badge>
+      ),
+    },
+    {
+      key: "active",
+      header: "Estado",
+      render: (row: Record<string, unknown>) => (
+        <Badge variant={row.active ? "default" : "secondary"}>
+          {row.active ? "Activo" : "Inactivo"}
+        </Badge>
+      ),
+    },
     {
       key: "actions",
       header: "Acciones",
@@ -99,11 +106,7 @@ export default function AdminUsuariosPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleToggleActive(row)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleToggleActive(row)}>
             <UserX className="h-4 w-4" />
           </Button>
         </div>
@@ -129,7 +132,7 @@ export default function AdminUsuariosPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={users.data?.data ?? users.data ?? []}
+          data={Array.isArray(users.data?.data) ? users.data.data : []}
           emptyMessage="No hay usuarios registrados"
         />
       )}
@@ -138,9 +141,7 @@ export default function AdminUsuariosPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingUser ? "Editar usuario" : "Crear usuario"}
-            </DialogTitle>
+            <DialogTitle>{editingUser ? "Editar usuario" : "Crear usuario"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
@@ -187,13 +188,8 @@ export default function AdminUsuariosPage() {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button
-                onClick={handleSave}
-                disabled={createUser.isPending || updateUser.isPending}
-              >
-                {(createUser.isPending || updateUser.isPending)
-                  ? "Guardando..."
-                  : "Guardar"}
+              <Button onClick={handleSave} disabled={createUser.isPending || updateUser.isPending}>
+                {createUser.isPending || updateUser.isPending ? "Guardando..." : "Guardar"}
               </Button>
             </div>
           </div>

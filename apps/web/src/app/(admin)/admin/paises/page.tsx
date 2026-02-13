@@ -14,12 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function AdminPaisesPage() {
@@ -95,8 +90,7 @@ export default function AdminPaisesPage() {
     {
       key: "taxRate",
       header: "Tasa impositiva",
-      render: (row: Record<string, unknown>) =>
-        row.taxRate != null ? `${row.taxRate}%` : "-",
+      render: (row: Record<string, unknown>) => (row.taxRate != null ? `${row.taxRate}%` : "-"),
     },
     {
       key: "active",
@@ -115,11 +109,7 @@ export default function AdminPaisesPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(row.id as string)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleDelete(row.id as string)}>
             <Trash2 className="h-4 w-4 text-[var(--destructive)]" />
           </Button>
         </div>
@@ -145,7 +135,7 @@ export default function AdminPaisesPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={countries.data?.data ?? countries.data ?? []}
+          data={Array.isArray(countries.data?.data) ? countries.data.data : []}
           emptyMessage="No hay paises registrados"
         />
       )}
@@ -153,9 +143,7 @@ export default function AdminPaisesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editing ? "Editar pais" : "Nuevo pais"}
-            </DialogTitle>
+            <DialogTitle>{editing ? "Editar pais" : "Nuevo pais"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
@@ -163,9 +151,7 @@ export default function AdminPaisesPage() {
                 <Label>Codigo (ISO)</Label>
                 <Input
                   value={form.code}
-                  onChange={(e) =>
-                    setForm({ ...form, code: e.target.value.toUpperCase() })
-                  }
+                  onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
                   placeholder="CO"
                   maxLength={3}
                   disabled={!!editing}
@@ -208,9 +194,7 @@ export default function AdminPaisesPage() {
                 onClick={handleSave}
                 disabled={createCountry.isPending || updateCountry.isPending}
               >
-                {(createCountry.isPending || updateCountry.isPending)
-                  ? "Guardando..."
-                  : "Guardar"}
+                {createCountry.isPending || updateCountry.isPending ? "Guardando..." : "Guardar"}
               </Button>
             </div>
           </div>

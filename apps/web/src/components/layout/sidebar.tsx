@@ -16,6 +16,13 @@ import {
   FolderTree,
   Globe,
   FileText,
+  ShoppingCart,
+  Contact,
+  UserPlus,
+  Handshake,
+  Mail,
+  MessageCircle,
+  GitBranch,
 } from "lucide-react";
 
 const mainNav = [
@@ -40,6 +47,7 @@ export function Sidebar() {
   const { data: session } = useSession();
   const role = session?.user?.role;
   const isAdmin = role === "SUPER_ADMIN" || role === "ADMIN";
+  const canViewOrders = role === "SUPER_ADMIN" || role === "ADMIN" || role === "DROPSHIPPER";
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-[var(--sidebar-border)] bg-[var(--sidebar-background)]">
@@ -59,8 +67,7 @@ export function Sidebar() {
           Principal
         </p>
         {mainNav.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -78,6 +85,67 @@ export function Sidebar() {
           );
         })}
 
+        {(isAdmin || role === "ANALYST" || role === "DROPSHIPPER") && (
+          <>
+            <div className="my-3 border-t border-[var(--sidebar-border)]" />
+            <p className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+              CRM
+            </p>
+            {[
+              { href: "/crm", label: "Dashboard CRM", icon: Contact },
+              { href: "/crm/contactos", label: "Contactos", icon: Users },
+              { href: "/crm/leads", label: "Leads", icon: UserPlus },
+              { href: "/crm/deals", label: "Negocios", icon: Handshake },
+              ...(isAdmin
+                ? [
+                    { href: "/crm/campanas", label: "Campañas", icon: Mail },
+                    { href: "/crm/whatsapp", label: "WhatsApp", icon: MessageCircle },
+                    { href: "/crm/pipelines", label: "Pipelines", icon: GitBranch },
+                  ]
+                : []),
+            ].map((item) => {
+              const isActive =
+                item.href === "/crm"
+                  ? pathname === "/crm"
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive
+                      ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-primary)] font-medium"
+                      : "text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)]"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
+
+        {canViewOrders &&
+          (() => {
+            const isActive = pathname === "/pedidos" || pathname.startsWith("/pedidos/");
+            return (
+              <Link
+                href="/pedidos"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive
+                    ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-primary)] font-medium"
+                    : "text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)]"
+                )}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Pedidos
+              </Link>
+            );
+          })()}
+
         {isAdmin && (
           <>
             <div className="my-3 border-t border-[var(--sidebar-border)]" />
@@ -87,8 +155,7 @@ export function Sidebar() {
             {adminNav.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/admin" &&
-                  pathname.startsWith(item.href + "/"));
+                (item.href !== "/admin" && pathname.startsWith(item.href + "/"));
               return (
                 <Link
                   key={item.href}

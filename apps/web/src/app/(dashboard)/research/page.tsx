@@ -58,7 +58,7 @@ export default function ResearchListPage() {
     });
   };
 
-  const notes = research.data?.data ?? research.data ?? [];
+  const notes = Array.isArray(research.data?.data) ? research.data.data : [];
 
   return (
     <div>
@@ -68,7 +68,11 @@ export default function ResearchListPage() {
         action={
           canWrite ? (
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleExpressCreate} disabled={createNote.isPending}>
+              <Button
+                variant="outline"
+                onClick={handleExpressCreate}
+                disabled={createNote.isPending}
+              >
                 <Zap className="h-4 w-4 mr-2" />
                 Investigacion Express
               </Button>
@@ -139,7 +143,7 @@ export default function ResearchListPage() {
                 {note.title as string}
               </h3>
 
-              {note.productName && (
+              {(note.productName as string) && (
                 <p className="text-sm text-[var(--muted-foreground)] mt-1 flex items-center gap-1">
                   <LinkIcon className="h-3 w-3" />
                   {note.productName as string}

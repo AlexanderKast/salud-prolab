@@ -21,12 +21,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectOption } from "@/components/ui/select";
 import {
   ArrowLeft,
@@ -136,18 +131,14 @@ export default function ProductoDetailPage() {
                 <Label>Nombre</Label>
                 <Input
                   value={(editData?.name as string) ?? ""}
-                  onChange={(e) =>
-                    setEditData((d) => ({ ...d!, name: e.target.value }))
-                  }
+                  onChange={(e) => setEditData((d) => ({ ...d!, name: e.target.value }))}
                 />
               </div>
               <div>
                 <Label>SKU</Label>
                 <Input
                   value={(editData?.sku as string) ?? ""}
-                  onChange={(e) =>
-                    setEditData((d) => ({ ...d!, sku: e.target.value }))
-                  }
+                  onChange={(e) => setEditData((d) => ({ ...d!, sku: e.target.value }))}
                 />
               </div>
               <div>
@@ -155,18 +146,14 @@ export default function ProductoDetailPage() {
                 <Input
                   type="number"
                   value={(editData?.price as string) ?? ""}
-                  onChange={(e) =>
-                    setEditData((d) => ({ ...d!, price: e.target.value }))
-                  }
+                  onChange={(e) => setEditData((d) => ({ ...d!, price: e.target.value }))}
                 />
               </div>
               <div>
                 <Label>Etiquetas (separadas por coma)</Label>
                 <Input
                   value={(editData?.tags as string) ?? ""}
-                  onChange={(e) =>
-                    setEditData((d) => ({ ...d!, tags: e.target.value }))
-                  }
+                  onChange={(e) => setEditData((d) => ({ ...d!, tags: e.target.value }))}
                 />
               </div>
             </div>
@@ -174,9 +161,7 @@ export default function ProductoDetailPage() {
               <Label>Descripcion</Label>
               <Textarea
                 value={(editData?.description as string) ?? ""}
-                onChange={(e) =>
-                  setEditData((d) => ({ ...d!, description: e.target.value }))
-                }
+                onChange={(e) => setEditData((d) => ({ ...d!, description: e.target.value }))}
                 rows={5}
               />
             </div>
@@ -221,23 +206,19 @@ export default function ProductoDetailPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (data.variants ?? []).map(
-                    (v: Record<string, unknown>) => (
-                      <TableRow key={v.id as string}>
-                        <TableCell className="font-medium">
-                          {v.name as string}
-                        </TableCell>
-                        <TableCell>{v.sku as string}</TableCell>
-                        <TableCell>${(v.price as number)?.toFixed(2)}</TableCell>
-                        <TableCell>{(v.stock as number) ?? "-"}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm">
-                            Editar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  )
+                  (data.variants ?? []).map((v: Record<string, unknown>) => (
+                    <TableRow key={v.id as string}>
+                      <TableCell className="font-medium">{v.name as string}</TableCell>
+                      <TableCell>{v.sku as string}</TableCell>
+                      <TableCell>${(v.price as number)?.toFixed(2)}</TableCell>
+                      <TableCell>{(v.stock as number) ?? "-"}</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm">
+                          Editar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -272,25 +253,21 @@ export default function ProductoDetailPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (data.availability ?? []).map(
-                    (a: Record<string, unknown>) => (
-                      <TableRow key={a.countryId as string}>
-                        <TableCell className="font-medium">
-                          {a.countryName as string}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={a.active ? "default" : "secondary"}>
-                            {a.active ? "Si" : "No"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {a.localPrice
-                            ? `${a.currency ?? "$"} ${(a.localPrice as number).toFixed(2)}`
-                            : "-"}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  )
+                  (data.availability ?? []).map((a: Record<string, unknown>) => (
+                    <TableRow key={a.countryId as string}>
+                      <TableCell className="font-medium">{a.countryName as string}</TableCell>
+                      <TableCell>
+                        <Badge variant={a.active ? "default" : "secondary"}>
+                          {a.active ? "Si" : "No"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {a.localPrice
+                          ? `${a.currency ?? "$"} ${(a.localPrice as number).toFixed(2)}`
+                          : "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -318,26 +295,20 @@ export default function ProductoDetailPage() {
               />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {(data.materials ?? []).map(
-                  (m: Record<string, unknown>) => (
-                    <div
-                      key={m.id as string}
-                      className="rounded-lg border border-[var(--border)] overflow-hidden"
-                    >
-                      <div className="h-32 bg-[var(--muted)] flex items-center justify-center">
-                        <Image className="h-8 w-8 text-[var(--muted-foreground)]" />
-                      </div>
-                      <div className="p-2">
-                        <p className="text-xs font-medium truncate">
-                          {m.name as string}
-                        </p>
-                        <p className="text-xs text-[var(--muted-foreground)]">
-                          {m.type as string}
-                        </p>
-                      </div>
+                {(data.materials ?? []).map((m: Record<string, unknown>) => (
+                  <div
+                    key={m.id as string}
+                    className="rounded-lg border border-[var(--border)] overflow-hidden"
+                  >
+                    <div className="h-32 bg-[var(--muted)] flex items-center justify-center">
+                      <Image className="h-8 w-8 text-[var(--muted-foreground)]" />
                     </div>
-                  )
-                )}
+                    <div className="p-2">
+                      <p className="text-xs font-medium truncate">{m.name as string}</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">{m.type as string}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -363,20 +334,18 @@ export default function ProductoDetailPage() {
               />
             ) : (
               <div className="space-y-3">
-                {(data.researchNotes ?? []).map(
-                  (note: Record<string, unknown>) => (
-                    <Link
-                      key={note.id as string}
-                      href={`/research/${note.id}`}
-                      className="block rounded-lg border border-[var(--border)] p-4 hover:bg-[var(--muted)] transition-colors"
-                    >
-                      <h4 className="font-medium">{note.title as string}</h4>
-                      <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                        {(note.benchmarkCount as number) ?? 0} benchmarks
-                      </p>
-                    </Link>
-                  )
-                )}
+                {(data.researchNotes ?? []).map((note: Record<string, unknown>) => (
+                  <Link
+                    key={note.id as string}
+                    href={`/research/${note.id}`}
+                    className="block rounded-lg border border-[var(--border)] p-4 hover:bg-[var(--muted)] transition-colors"
+                  >
+                    <h4 className="font-medium">{note.title as string}</h4>
+                    <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                      {(note.benchmarkCount as number) ?? 0} benchmarks
+                    </p>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
@@ -402,20 +371,18 @@ export default function ProductoDetailPage() {
               />
             ) : (
               <div className="space-y-3">
-                {(data.playbooks ?? []).map(
-                  (pb: Record<string, unknown>) => (
-                    <Link
-                      key={pb.id as string}
-                      href={`/marketing/playbook/${pb.id}`}
-                      className="block rounded-lg border border-[var(--border)] p-4 hover:bg-[var(--muted)] transition-colors"
-                    >
-                      <h4 className="font-medium">{pb.title as string}</h4>
-                      <Badge variant="outline" className="mt-1">
-                        {pb.status as string}
-                      </Badge>
-                    </Link>
-                  )
-                )}
+                {(data.playbooks ?? []).map((pb: Record<string, unknown>) => (
+                  <Link
+                    key={pb.id as string}
+                    href={`/marketing/playbook/${pb.id}`}
+                    className="block rounded-lg border border-[var(--border)] p-4 hover:bg-[var(--muted)] transition-colors"
+                  >
+                    <h4 className="font-medium">{pb.title as string}</h4>
+                    <Badge variant="outline" className="mt-1">
+                      {pb.status as string}
+                    </Badge>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
@@ -442,19 +409,17 @@ export default function ProductoDetailPage() {
               />
             ) : (
               <div className="space-y-3">
-                {(data.faqs ?? []).map(
-                  (faq: Record<string, unknown>, i: number) => (
-                    <div
-                      key={(faq.id as string) ?? i}
-                      className="rounded-lg border border-[var(--border)] p-4"
-                    >
-                      <h4 className="font-medium">{faq.question as string}</h4>
-                      <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                        {faq.answer as string}
-                      </p>
-                    </div>
-                  )
-                )}
+                {(data.faqs ?? []).map((faq: Record<string, unknown>, i: number) => (
+                  <div
+                    key={(faq.id as string) ?? i}
+                    className="rounded-lg border border-[var(--border)] p-4"
+                  >
+                    <h4 className="font-medium">{faq.question as string}</h4>
+                    <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                      {faq.answer as string}
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -494,13 +459,11 @@ export default function ProductoDetailPage() {
               onChange={(e) => setSelectedCollectionId(e.target.value)}
             >
               <SelectOption value="">Seleccionar coleccion...</SelectOption>
-              {(collections.data ?? []).map(
-                (col: Record<string, string>) => (
-                  <SelectOption key={col.id} value={col.id}>
-                    {col.name}
-                  </SelectOption>
-                )
-              )}
+              {(collections.data?.data ?? []).map((col: Record<string, string>) => (
+                <SelectOption key={col.id} value={col.id}>
+                  {col.name}
+                </SelectOption>
+              ))}
             </Select>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setAddDialogOpen(false)}>

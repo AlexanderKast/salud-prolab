@@ -11,19 +11,14 @@ import { TemplateCard } from "@/components/marketing/template-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  BookOpen,
-  FileText,
-  Plus,
-  Calendar,
-  Layers,
-} from "lucide-react";
+import { BookOpen, FileText, Plus, Calendar, Layers } from "lucide-react";
 
-const statusLabels: Record<string, { text: string; variant: "default" | "secondary" | "outline" }> = {
-  DRAFT: { text: "Borrador", variant: "secondary" },
-  PUBLISHED: { text: "Publicado", variant: "default" },
-  ARCHIVED: { text: "Archivado", variant: "outline" },
-};
+const statusLabels: Record<string, { text: string; variant: "default" | "secondary" | "outline" }> =
+  {
+    DRAFT: { text: "Borrador", variant: "secondary" },
+    PUBLISHED: { text: "Publicado", variant: "default" },
+    ARCHIVED: { text: "Archivado", variant: "outline" },
+  };
 
 export default function MarketingPage() {
   const { data: session } = useSession();
@@ -35,8 +30,8 @@ export default function MarketingPage() {
     session?.user?.role === "ADMIN" ||
     session?.user?.role === "ANALYST";
 
-  const playbookList = playbooks.data?.data ?? playbooks.data ?? [];
-  const templateList = templates.data?.data ?? templates.data ?? [];
+  const playbookList = Array.isArray(playbooks.data?.data) ? playbooks.data.data : [];
+  const templateList = Array.isArray(templates.data?.data) ? templates.data.data : [];
 
   return (
     <div>
