@@ -55,7 +55,20 @@ export type Permission =
   | "crm:whatsapp:write"
   | "crm:whatsapp:send"
   | "crm:automations:read"
-  | "crm:automations:write";
+  | "crm:automations:write"
+  | "conversations:read"
+  | "conversations:write"
+  | "tasks:read"
+  | "tasks:write"
+  | "tasks:delete"
+  | "appointments:read"
+  | "appointments:write"
+  | "appointments:delete"
+  | "tags:read"
+  | "tags:write"
+  | "tags:delete"
+  | "workspaces:read"
+  | "workspaces:write";
 
 export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
   SUPER_ADMIN: [
@@ -106,6 +119,19 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
     "crm:whatsapp:send",
     "crm:automations:read",
     "crm:automations:write",
+    "conversations:read",
+    "conversations:write",
+    "tasks:read",
+    "tasks:write",
+    "tasks:delete",
+    "appointments:read",
+    "appointments:write",
+    "appointments:delete",
+    "tags:read",
+    "tags:write",
+    "tags:delete",
+    "workspaces:read",
+    "workspaces:write",
   ],
   ADMIN: [
     "products:read",
@@ -151,6 +177,19 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
     "crm:whatsapp:send",
     "crm:automations:read",
     "crm:automations:write",
+    "conversations:read",
+    "conversations:write",
+    "tasks:read",
+    "tasks:write",
+    "tasks:delete",
+    "appointments:read",
+    "appointments:write",
+    "appointments:delete",
+    "tags:read",
+    "tags:write",
+    "tags:delete",
+    "workspaces:read",
+    "workspaces:write",
   ],
   ANALYST: [
     "products:read",
@@ -165,6 +204,10 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
     "crm:campaigns:read",
     "crm:whatsapp:read",
     "crm:automations:read",
+    "conversations:read",
+    "tasks:read",
+    "appointments:read",
+    "tags:read",
   ],
   DROPSHIPPER: [
     "products:read",
@@ -180,6 +223,12 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
     "platforms:write",
     "price-tiers:read",
     "crm:read",
+    "conversations:read",
+    "tasks:read",
+    "tasks:write",
+    "appointments:read",
+    "appointments:write",
+    "tags:read",
   ],
   GUEST: ["products:read"],
 };

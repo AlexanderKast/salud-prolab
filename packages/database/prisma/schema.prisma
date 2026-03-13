@@ -166,6 +166,55 @@ enum CrmAutomationAction {
   NOTIFICAR
 }
 
+// ── GHL Scaffold Enums ──────────────────────────────────
+
+enum ConversationChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+  CHAT
+  INTERNO
+}
+
+enum ConversationStatus {
+  ABIERTA
+  EN_ESPERA
+  CERRADA
+}
+
+enum MessageDirection {
+  ENTRANTE
+  SALIENTE
+}
+
+enum TaskStatus {
+  PENDIENTE
+  EN_PROGRESO
+  COMPLETADA
+  CANCELADA
+}
+
+enum TaskPriority {
+  BAJA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum AppointmentStatus {
+  PROGRAMADA
+  CONFIRMADA
+  COMPLETADA
+  CANCELADA
+  NO_ASISTIO
+}
+
+enum WorkflowRunStatus {
+  EN_EJECUCION
+  COMPLETADO
+  FALLIDO
+}
+
 // ── Auth Models ────────────────────────────────────────────
 
 model User {
@@ -195,6 +244,14 @@ model User {
   crmCampaigns         CrmEmailCampaign[]  @relation("CrmCampaignCreator")
   crmWhatsAppMessages  CrmWhatsAppMessage[] @relation("CrmWhatsAppCreator")
   crmAutomations       CrmAutomation[]     @relation("CrmAutomationCreator")
+
+  // Conversations, Tasks, Calendar, Workspace relations
+  assignedConversations Conversation[]      @relation("ConversationAssignee")
+  assignedTasks         Task[]              @relation("TaskAssignee")
+  createdTasks          Task[]              @relation("TaskCreator")
+  assignedAppointments  Appointment[]       @relation("AppointmentAssignee")
+  createdAppointments   Appointment[]       @relation("AppointmentCreator")
+  ownedWorkspaces       Workspace[]         @relation("WorkspaceOwner")
 
   @@index([email])
   @@index([role])
@@ -756,6 +813,11 @@ model CrmContact {
   emailRecipients   CrmEmailRecipient[]
   whatsappMessages  CrmWhatsAppMessage[]
 
+  // Conversations, Tasks, Calendar
+  conversations     Conversation[]
+  tasks             Task[]
+  appointments      Appointment[]
+
   @@index([email])
   @@index([phone])
   @@index([distributorId])
@@ -831,6 +893,7 @@ model CrmLead {
   assignedTo    User?            @relation("CrmLeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   convertedDeal CrmDeal?         @relation("LeadToDeal", fields: [convertedDealId], references: [id], onDelete: SetNull)
   activities    CrmActivity[]
+  tasks         Task[]
 
   @@index([pipelineId, stageId, stageOrder])
   @@index([contactId])
@@ -869,6 +932,7 @@ model CrmDeal {
   assignedTo User?            @relation("CrmDealAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   fromLead   CrmLead?         @relation("LeadToDeal")
   activities CrmActivity[]
+  tasks      Task[]
 
   @@index([pipelineId, stageId, stageOrder])
   @@index([contactId])
@@ -1008,8 +1072,160 @@ model CrmAutomation {
 
   pipeline  CrmPipeline? @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
   createdBy User         @relation("CrmAutomationCreator", fields: [createdById], references: [id])
+  runs      WorkflowRun[]
 
   @@index([trigger])
   @@index([active])
   @@index([pipelineId])
+}
+
+// ── GHL Scaffold Models ─────────────────────────────────
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  color     String   @default("#6B7280")
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model Conversation {
+  id            String              @id @default(cuid())
+  contactId     String
+  channel       ConversationChannel
+  status        ConversationStatus  @default(ABIERTA)
+  subject       String?
+  assignedToId  String?
+  lastMessageAt DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  contact    CrmContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  assignedTo User?      @relation("ConversationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  messages   Message[]
+
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([channel])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String           @id @default(cuid())
+  conversationId String
+  direction      MessageDirection
+  body           String           @db.Text
+  metadata       Json?
+  sentAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?      @db.Text
+  status       TaskStatus   @default(PENDIENTE)
+  priority     TaskPriority @default(MEDIA)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  assignedToId String?
+  contactId    String?
+  leadId       String?
+  dealId       String?
+  createdById  String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  assignedTo User?       @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  contact    CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  lead       CrmLead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  deal       CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  createdBy  User        @relation("TaskCreator", fields: [createdById], references: [id])
+
+  @@index([assignedToId])
+  @@index([contactId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([createdAt])
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  title        String
+  description  String?           @db.Text
+  status       AppointmentStatus @default(PROGRAMADA)
+  startAt      DateTime
+  endAt        DateTime
+  location     String?
+  contactId    String?
+  assignedToId String?
+  createdById  String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  contact    CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  assignedTo User?       @relation("AppointmentAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy  User        @relation("AppointmentCreator", fields: [createdById], references: [id])
+
+  @@index([assignedToId])
+  @@index([contactId])
+  @@index([startAt])
+  @@index([status])
+}
+
+model WorkflowRun {
+  id           String            @id @default(cuid())
+  automationId String
+  triggeredBy  String?
+  status       WorkflowRunStatus @default(EN_EJECUCION)
+  startedAt    DateTime          @default(now())
+  completedAt  DateTime?
+  error        String?           @db.Text
+  createdAt    DateTime          @default(now())
+
+  automation CrmAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  logs       WorkflowLog[]
+
+  @@index([automationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WorkflowLog {
+  id        String   @id @default(cuid())
+  runId     String
+  step      Int
+  action    String
+  input     Json?
+  output    Json?
+  success   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+
+  @@index([slug])
+  @@index([ownerId])
 }

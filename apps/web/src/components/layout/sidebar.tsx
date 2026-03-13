@@ -23,6 +23,11 @@ import {
   Mail,
   MessageCircle,
   GitBranch,
+  Inbox,
+  CheckSquare,
+  Calendar,
+  Tag,
+  Zap,
 } from "lucide-react";
 
 const mainNav = [
@@ -40,6 +45,7 @@ const adminNav = [
   { href: "/admin/categorias", label: "Categorías", icon: FolderTree },
   { href: "/admin/paises", label: "Países", icon: Globe },
   { href: "/admin/audit", label: "Auditoría", icon: FileText },
+  { href: "/admin/tags", label: "Tags", icon: Tag },
 ];
 
 export function Sidebar() {
@@ -108,6 +114,40 @@ export function Sidebar() {
                 item.href === "/crm"
                   ? pathname === "/crm"
                   : pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive
+                      ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-primary)] font-medium"
+                      : "text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)]"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
+
+        {(isAdmin || role === "ANALYST" || role === "DROPSHIPPER") && (
+          <>
+            <div className="my-3 border-t border-[var(--sidebar-border)]" />
+            <p className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+              Operaciones
+            </p>
+            {[
+              { href: "/conversaciones", label: "Conversaciones", icon: Inbox },
+              { href: "/tareas", label: "Tareas", icon: CheckSquare },
+              { href: "/citas", label: "Citas", icon: Calendar },
+              ...(isAdmin
+                ? [{ href: "/crm/automatizaciones", label: "Automatizaciones", icon: Zap }]
+                : []),
+            ].map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.href}

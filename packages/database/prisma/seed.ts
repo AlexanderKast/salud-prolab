@@ -10,6 +10,11 @@ import {
   OrderType,
   OrderStatus,
   Platform,
+  ConversationChannel,
+  ConversationStatus,
+  TaskStatus,
+  TaskPriority,
+  AppointmentStatus,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -19,6 +24,14 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // ── Cleanup (for re-seeding) ──────────────────────────────
+  await prisma.workflowLog.deleteMany();
+  await prisma.workflowRun.deleteMany();
+  await prisma.workspace.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.task.deleteMany();
+  await prisma.tag.deleteMany();
   await prisma.platformProductReference.deleteMany();
   await prisma.scheduledOrder.deleteMany();
   await prisma.orderStatusHistory.deleteMany();
@@ -1066,6 +1079,102 @@ async function main() {
   });
 
   console.log("✅ Platform references created");
+
+  // ── Tags ──────────────────────────────────────────────────
+  await prisma.tag.createMany({
+    skipDuplicates: true,
+    data: [
+      { name: "VIP", slug: "vip", color: "#EAB308" },
+      { name: "Nuevo", slug: "nuevo", color: "#22C55E" },
+      { name: "Urgente", slug: "urgente", color: "#EF4444" },
+      { name: "Seguimiento", slug: "seguimiento", color: "#3B82F6" },
+      { name: "Potencial", slug: "potencial", color: "#8B5CF6" },
+    ],
+  });
+
+  console.log("✅ Tags created");
+
+  // ── Tasks ─────────────────────────────────────────────────
+  await prisma.task.createMany({
+    data: [
+      {
+        title: "Revisar inventario colágeno",
+        description: "Verificar stock disponible y programar reposición si es necesario",
+        status: "PENDIENTE",
+        priority: "ALTA",
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        assignedToId: users[1].id,
+        createdById: users[0].id,
+      },
+      {
+        title: "Preparar reporte mensual de ventas",
+        description: "Consolidar datos de ventas del mes para presentación",
+        status: "EN_PROGRESO",
+        priority: "MEDIA",
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        assignedToId: users[2].id,
+        createdById: users[0].id,
+      },
+      {
+        title: "Contactar nuevo proveedor Ecuador",
+        description: "Enviar propuesta de distribución a potencial proveedor en Guayaquil",
+        status: "PENDIENTE",
+        priority: "MEDIA",
+        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        assignedToId: users[0].id,
+        createdById: users[0].id,
+      },
+      {
+        title: "Actualizar precios Q2",
+        status: "COMPLETADA",
+        priority: "ALTA",
+        completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        assignedToId: users[1].id,
+        createdById: users[0].id,
+      },
+    ],
+  });
+
+  console.log("✅ Tasks created");
+
+  // ── Appointments ──────────────────────────────────────────
+  await prisma.appointment.createMany({
+    data: [
+      {
+        title: "Reunión con NaturaTienda CO",
+        description: "Revisión trimestral de desempeño y nuevas oportunidades",
+        status: "PROGRAMADA",
+        startAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        endAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
+        location: "Oficina Bogotá",
+        assignedToId: users[0].id,
+        createdById: users[0].id,
+      },
+      {
+        title: "Demo producto proteína whey",
+        description: "Presentación de nueva línea de proteínas para distribuidores",
+        status: "CONFIRMADA",
+        startAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        endAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 90 * 60 * 1000),
+        location: "Google Meet",
+        assignedToId: users[1].id,
+        createdById: users[0].id,
+      },
+    ],
+  });
+
+  console.log("✅ Appointments created");
+
+  // ── Workspace ─────────────────────────────────────────────
+  await prisma.workspace.create({
+    data: {
+      name: "Salud ProLab Principal",
+      slug: "salud-prolab-principal",
+      ownerId: users[0].id,
+    },
+  });
+
+  console.log("✅ Workspace created");
 
   // ── Audit Logs ──────────────────────────────────────────
   await prisma.auditLog.createMany({

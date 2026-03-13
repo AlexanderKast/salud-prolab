@@ -209,6 +209,94 @@ export const createCrmAutomationSchema = z.object({
 
 export const updateCrmAutomationSchema = createCrmAutomationSchema.partial();
 
+// ── GHL Scaffold: Conversations ─────────────────────────
+
+export const conversationChannelEnum = z.enum(["EMAIL", "WHATSAPP", "SMS", "CHAT", "INTERNO"]);
+export const conversationStatusEnum = z.enum(["ABIERTA", "EN_ESPERA", "CERRADA"]);
+export const messageDirectionEnum = z.enum(["ENTRANTE", "SALIENTE"]);
+
+export const createConversationSchema = z.object({
+  contactId: z.string().min(1, "Contacto requerido"),
+  channel: conversationChannelEnum,
+  subject: z.string().optional(),
+  assignedToId: z.string().optional(),
+});
+
+export const updateConversationSchema = z.object({
+  status: conversationStatusEnum.optional(),
+  assignedToId: z.string().optional(),
+  subject: z.string().optional(),
+});
+
+export const createMessageSchema = z.object({
+  conversationId: z.string().min(1, "Conversación requerida"),
+  direction: messageDirectionEnum.default("SALIENTE"),
+  body: z.string().min(1, "Mensaje requerido"),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+// ── GHL Scaffold: Tasks ─────────────────────────────────
+
+export const taskStatusEnum = z.enum(["PENDIENTE", "EN_PROGRESO", "COMPLETADA", "CANCELADA"]);
+export const taskPriorityEnum = z.enum(["BAJA", "MEDIA", "ALTA", "URGENTE"]);
+
+export const createTaskSchema = z.object({
+  title: z.string().min(1, "Título requerido"),
+  description: z.string().optional(),
+  status: taskStatusEnum.default("PENDIENTE"),
+  priority: taskPriorityEnum.default("MEDIA"),
+  dueDate: z.string().optional(),
+  assignedToId: z.string().optional(),
+  contactId: z.string().optional(),
+  leadId: z.string().optional(),
+  dealId: z.string().optional(),
+});
+
+export const updateTaskSchema = createTaskSchema.partial();
+
+// ── GHL Scaffold: Appointments ──────────────────────────
+
+export const appointmentStatusEnum = z.enum([
+  "PROGRAMADA",
+  "CONFIRMADA",
+  "COMPLETADA",
+  "CANCELADA",
+  "NO_ASISTIO",
+]);
+
+export const createAppointmentSchema = z.object({
+  title: z.string().min(1, "Título requerido"),
+  description: z.string().optional(),
+  status: appointmentStatusEnum.default("PROGRAMADA"),
+  startAt: z.string().min(1, "Fecha de inicio requerida"),
+  endAt: z.string().min(1, "Fecha de fin requerida"),
+  location: z.string().optional(),
+  contactId: z.string().optional(),
+  assignedToId: z.string().optional(),
+});
+
+export const updateAppointmentSchema = createAppointmentSchema.partial();
+
+// ── GHL Scaffold: Tags ──────────────────────────────────
+
+export const createTagSchema = z.object({
+  name: z.string().min(1, "Nombre requerido"),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Color hexadecimal inválido")
+    .default("#6B7280"),
+});
+
+export const updateTagSchema = createTagSchema.partial();
+
+// ── GHL Scaffold: Workspaces ────────────────────────────
+
+export const createWorkspaceSchema = z.object({
+  name: z.string().min(1, "Nombre requerido"),
+});
+
+export const updateWorkspaceSchema = createWorkspaceSchema.partial();
+
 // ── Type exports ─────────────────────────────────────────
 
 export type CreateCrmContactInput = z.infer<typeof createCrmContactSchema>;
@@ -224,3 +312,13 @@ export type CreateCrmActivityInput = z.infer<typeof createCrmActivitySchema>;
 export type CreateCrmCampaignInput = z.infer<typeof createCrmCampaignSchema>;
 export type SendCrmWhatsAppInput = z.infer<typeof sendCrmWhatsAppSchema>;
 export type CreateCrmAutomationInput = z.infer<typeof createCrmAutomationSchema>;
+export type CreateConversationInput = z.infer<typeof createConversationSchema>;
+export type UpdateConversationInput = z.infer<typeof updateConversationSchema>;
+export type CreateMessageInput = z.infer<typeof createMessageSchema>;
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
+export type UpdateAppointmentInput = z.infer<typeof updateAppointmentSchema>;
+export type CreateTagInput = z.infer<typeof createTagSchema>;
+export type UpdateTagInput = z.infer<typeof updateTagSchema>;
+export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;

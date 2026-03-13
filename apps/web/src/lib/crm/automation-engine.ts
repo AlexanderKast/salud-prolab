@@ -1,4 +1,4 @@
-import { prisma } from "@salud-prolab/database";
+import { prisma, Prisma } from "@salud-prolab/database";
 import type { CrmAutomationTrigger, CrmActivityType } from "@salud-prolab/database";
 
 type TriggerContext = {
@@ -29,8 +29,35 @@ export async function executeAutomations(
     });
 
     for (const automation of automations) {
+      // Create WorkflowRun for tracking
+      const run = await prisma.workflowRun.create({
+        data: {
+          automationId: automation.id,
+          triggeredBy: context.userId || null,
+          status: "EN_EJECUCION",
+        },
+      });
+
       try {
         await executeAction(automation.action, automation.actionConfig, context);
+
+        // Log success
+        await prisma.workflowLog.create({
+          data: {
+            runId: run.id,
+            step: 1,
+            action: automation.action,
+            input: context as unknown as Prisma.InputJsonValue,
+            output: { result: "ok" },
+            success: true,
+          },
+        });
+
+        // Mark run as completed
+        await prisma.workflowRun.update({
+          where: { id: run.id },
+          data: { status: "COMPLETADO", completedAt: new Date() },
+        });
 
         // Update execution stats
         await prisma.crmAutomation.update({
@@ -42,6 +69,31 @@ export async function executeAutomations(
         });
       } catch (err) {
         console.error(`Automation ${automation.id} (${automation.name}) failed:`, err);
+
+        // Log failure
+        await prisma.workflowLog
+          .create({
+            data: {
+              runId: run.id,
+              step: 1,
+              action: automation.action,
+              input: context as unknown as Prisma.InputJsonValue,
+              output: { error: err instanceof Error ? err.message : "Unknown error" },
+              success: false,
+            },
+          })
+          .catch(() => {});
+
+        await prisma.workflowRun
+          .update({
+            where: { id: run.id },
+            data: {
+              status: "FALLIDO",
+              completedAt: new Date(),
+              error: err instanceof Error ? err.message : "Unknown error",
+            },
+          })
+          .catch(() => {});
       }
     }
   } catch (err) {
